@@ -1,107 +1,165 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { useLotStore } from '@/stores/lots'
-import { useToast } from '@/composables/useToast'
-import BaseIcon from '@/components/shared/BaseIcon.vue'
-import LotCard from '@/components/shared/LotCard.vue'
-import LotDetail from '@/components/shared/LotDetail.vue'
-import EmptyState from '@/components/shared/EmptyState.vue'
-import type { Lot, LotStatus } from '@/types/lot'
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useQueueStore } from "@/stores/queue";
+import { useToast } from "@/composables/useToast";
+import BaseIcon from "@/components/shared/BaseIcon.vue";
+import LotCard from "@/components/shared/LotCard.vue";
+import LotDetail from "@/components/shared/LotDetail.vue";
+import EmptyState from "@/components/shared/EmptyState.vue";
+import type { Lot, LotStatus } from "@/types/lot";
 
-const lotStore = useLotStore()
-const { pushToast } = useToast()
+const queueStore = useQueueStore();
+const { pushToast } = useToast();
 
-const tab = ref<LotStatus>('pending')
-const query = ref('')
-const sort = ref<'match' | 'deadline' | 'value'>('match')
-const sel = ref<string | null>(null)
-const leaving = ref<string | null>(null)
+const tab = ref<LotStatus>("pending");
+const query = ref("");
+const sort = ref<"match" | "deadline" | "value">("match");
+const sel = ref<string | null>(null);
+const leaving = ref<string | null>(null);
 
-const SORTS: Record<string, { label: string; fn: (a: Lot, b: Lot) => number }> = {
-  match: { label: "Moslik bo'yicha", fn: (a, b) => b.match.overall - a.match.overall },
-  deadline: { label: "Muddat bo'yicha", fn: (a, b) => a.deadlineH - b.deadlineH },
-  value: { label: "Summa bo'yicha", fn: (a, b) => b.maxPrice - a.maxPrice },
-}
-const sortOrder: Array<'match' | 'deadline' | 'value'> = ['match', 'deadline', 'value']
+const SORTS: Record<string, { label: string; fn: (a: Lot, b: Lot) => number }> =
+  {
+    match: {
+      label: "Moslik bo'yicha",
+      fn: (a, b) => b.match.overall - a.match.overall,
+    },
+    deadline: {
+      label: "Muddat bo'yicha",
+      fn: (a, b) => a.deadlineH - b.deadlineH,
+    },
+    value: { label: "Summa bo'yicha", fn: (a, b) => b.maxPrice - a.maxPrice },
+  };
+const sortOrder: Array<"match" | "deadline" | "value"> = [
+  "match",
+  "deadline",
+  "value",
+];
 
 const counts = computed(() => ({
-  pending: lotStore.pending.length,
-  accepted: lotStore.accepted.length,
-  rejected: lotStore.rejected.length,
-}))
+  pending: queueStore.pending.length,
+  accepted: queueStore.accepted.length,
+  rejected: queueStore.rejected.length,
+}));
 
 const visible = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  return lotStore.lots
-    .filter(l => l.status === tab.value)
-    .filter(l => !q || l.title.toLowerCase().includes(q) || l.customer.toLowerCase().includes(q) || l.lotNo.toLowerCase().includes(q) || l.category.toLowerCase().includes(q))
-    .sort(SORTS[sort.value].fn)
-})
+  const q = query.value.trim().toLowerCase();
+  return queueStore.items
+    .filter((l) => l.status === tab.value)
+    .filter(
+      (l) =>
+        !q ||
+        l.title.toLowerCase().includes(q) ||
+        l.customer.toLowerCase().includes(q) ||
+        l.lotNo.toLowerCase().includes(q) ||
+        l.category.toLowerCase().includes(q),
+    )
+    .sort(SORTS[sort.value].fn);
+});
 
-const selLot = computed(() => (sel.value ? lotStore.getLot(sel.value) ?? null : null))
+const selLot = computed(() =>
+  sel.value ? (queueStore.getLot(sel.value) ?? null) : null,
+);
 
 watch(tab, () => {
-  if (sel.value && !visible.value.some(l => l.id === sel.value)) {
-    sel.value = visible.value[0]?.id ?? null
+  if (sel.value && !visible.value.some((l) => l.id === sel.value)) {
+    sel.value = visible.value[0]?.id ?? null;
   }
   if (!sel.value && visible.value.length) {
-    sel.value = visible.value[0].id
+    sel.value = visible.value[0].id;
   }
-})
+});
+
+// Ma'lumot async yuklangani uchun ro'yxat to'lganda birinchi elementni tanlaymiz.
+watch(visible, (rows) => {
+  if (!sel.value && rows.length) sel.value = rows[0].id;
+});
 
 onMounted(() => {
-  if (!sel.value && visible.value.length) sel.value = visible.value[0].id
-})
+  queueStore.ensureLoaded();
+  if (!sel.value && visible.value.length) sel.value = visible.value[0].id;
+});
 
 function decide(id: string, status: LotStatus) {
-  if (leaving.value) return
-  const lot = lotStore.getLot(id)
-  if (!lot || lot.status !== 'pending') return
-  const idx = visible.value.findIndex(l => l.id === id)
-  const nextId = (visible.value[idx + 1] || visible.value[idx - 1])?.id ?? null
+  if (leaving.value) return;
+  const lot = queueStore.getLot(id);
+  if (!lot || lot.status !== "pending") return;
+  const idx = visible.value.findIndex((l) => l.id === id);
+  const nextId = (visible.value[idx + 1] || visible.value[idx - 1])?.id ?? null;
 
-  leaving.value = id
-  pushToast({
-    kind: status === 'accepted' ? 'acc' : 'rej',
-    title: status === 'accepted' ? 'Tender qabul qilindi' : 'Tender rad etildi',
-    sub: lot.title.length > 40 ? lot.title.slice(0, 40) + '…' : lot.title,
-    undoId: id,
-  })
+  leaving.value = id;
 
-  setTimeout(() => {
-    lotStore.decide(id, status)
-    leaving.value = null
-    sel.value = nextId
-  }, 320)
+  setTimeout(async () => {
+    try {
+      await queueStore.decide(id, status);
+      pushToast({
+        kind: status === "accepted" ? "acc" : "rej",
+        title:
+          status === "accepted" ? "Tender qabul qilindi" : "Tender rad etildi",
+        sub: lot.title.length > 40 ? lot.title.slice(0, 40) + "…" : lot.title,
+        undoId: id,
+        source: "queue",
+      });
+      sel.value = nextId;
+    } catch {
+      pushToast({
+        kind: "rej",
+        title: "Qarorni saqlab bo'lmadi",
+        sub: "Server bilan bog'lanishda xatolik. Qayta urinib ko'ring.",
+        undoId: id,
+        source: "queue",
+      });
+    } finally {
+      leaving.value = null;
+    }
+  }, 320);
 }
 
-function localUndo(id: string) {
-  lotStore.undo(id)
-  tab.value = 'pending'
-  sel.value = id
+async function localUndo(id: string) {
+  try {
+    await queueStore.undo(id);
+    tab.value = "pending";
+    sel.value = id;
+  } catch {
+    pushToast({
+      kind: "rej",
+      title: "Bekor qilib bo'lmadi",
+      sub: "Server bilan bog'lanishda xatolik.",
+      undoId: id,
+      source: "queue",
+    });
+  }
 }
 
 function onKey(e: KeyboardEvent) {
-  if ((e.target as HTMLElement).tagName === 'INPUT') return
-  if (!selLot.value || selLot.value.status !== 'pending') return
-  if (e.key.toLowerCase() === 'a') decide(selLot.value.id, 'accepted')
-  if (e.key.toLowerCase() === 'r') decide(selLot.value.id, 'rejected')
+  if ((e.target as HTMLElement).tagName === "INPUT") return;
+  if (!selLot.value || selLot.value.status !== "pending") return;
+  if (e.key.toLowerCase() === "a") decide(selLot.value.id, "accepted");
+  if (e.key.toLowerCase() === "r") decide(selLot.value.id, "rejected");
 }
 
-onMounted(() => window.addEventListener('keydown', onKey))
-onUnmounted(() => window.removeEventListener('keydown', onKey))
+onMounted(() => window.addEventListener("keydown", onKey));
+onUnmounted(() => window.removeEventListener("keydown", onKey));
 
 const tabMeta: Array<{ id: LotStatus; label: string }> = [
-  { id: 'pending', label: 'Qaror kutilmoqda' },
-  { id: 'accepted', label: 'Qabul qilingan' },
-  { id: 'rejected', label: 'Rad etilgan' },
-]
+  { id: "pending", label: "Qaror kutilmoqda" },
+  { id: "accepted", label: "Qabul qilingan" },
+  { id: "rejected", label: "Rad etilgan" },
+];
 
 const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
-  pending: { t: "Navbat bo'sh", p: "Qaror kutayotgan lotlar yo'q. AI quvuri yangi mosliklarni topganda ular shu yerda paydo bo'ladi." },
-  accepted: { t: "Qabul qilingan lotlar yo'q", p: 'Siz qabul qilgan tenderlar shu bo\'limda ko\'rinadi.' },
-  rejected: { t: "Rad etilgan lotlar yo'q", p: 'Rad etilgan tenderlar shu bo\'limda ko\'rinadi.' },
-}
+  pending: {
+    t: "Navbat bo'sh",
+    p: "Qaror kutayotgan lotlar yo'q. AI quvuri yangi mosliklarni topganda ular shu yerda paydo bo'ladi.",
+  },
+  accepted: {
+    t: "Qabul qilingan lotlar yo'q",
+    p: "Siz qabul qilgan tenderlar shu bo'limda ko'rinadi.",
+  },
+  rejected: {
+    t: "Rad etilgan lotlar yo'q",
+    p: "Rad etilgan tenderlar shu bo'limda ko'rinadi.",
+  },
+};
 </script>
 
 <template>
@@ -118,7 +176,9 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
           v-model="query"
         />
       </div>
-      <button class="icon-btn"><BaseIcon name="bell" /><span class="badge-dot" /></button>
+      <button class="icon-btn">
+        <BaseIcon name="bell" /><span class="badge-dot" />
+      </button>
       <button class="icon-btn"><BaseIcon name="settings" /></button>
     </div>
   </header>
@@ -138,7 +198,11 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
         </div>
       </div>
       <div class="list-meta">
-        <span class="lm-count"><b class="num">{{ visible.length }}</b> ta lot{{ query ? ' (filtr)' : '' }}</span>
+        <span class="lm-count"
+          ><b class="num">{{ visible.length }}</b> ta lot{{
+            query ? " (filtr)" : ""
+          }}</span
+        >
         <button
           class="sort-btn"
           @click="sort = sortOrder[(sortOrder.indexOf(sort) + 1) % 3]"
@@ -148,7 +212,19 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
       </div>
       <div class="list-scroll scroll">
         <EmptyState
-          v-if="visible.length === 0"
+          v-if="queueStore.loading && queueStore.items.length === 0"
+          icon="inbox"
+          title="Yuklanmoqda…"
+          description="Navbat serverdan olinmoqda."
+        />
+        <EmptyState
+          v-else-if="queueStore.error"
+          icon="inbox"
+          title="Navbatni yuklab bo'lmadi"
+          :description="queueStore.error"
+        />
+        <EmptyState
+          v-else-if="visible.length === 0"
           icon="inbox"
           :title="EMPTY_MAP[tab].t"
           :description="EMPTY_MAP[tab].p"
@@ -166,8 +242,8 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
 
     <LotDetail
       :lot="selLot"
-      @accept="id => decide(id, 'accepted')"
-      @reject="id => decide(id, 'rejected')"
+      @accept="(id) => decide(id, 'accepted')"
+      @reject="(id) => decide(id, 'rejected')"
       @undo="localUndo"
     />
   </div>
