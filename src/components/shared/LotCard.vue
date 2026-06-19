@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import type { Lot } from '@/types/lot'
-import BaseIcon from '@/components/shared/BaseIcon.vue'
-import MatchRing from '@/components/shared/MatchRing.vue'
-import { compactSom, deadline } from '@/lib/formatters'
+import type { Lot } from "@/types/lot";
+import BaseIcon from "@/components/shared/BaseIcon.vue";
+import MatchRing from "@/components/shared/MatchRing.vue";
+import { compactSom, deadline } from "@/lib/formatters";
 
 const props = defineProps<{
-  lot: Lot
-  selected?: boolean
-  leaving?: boolean
-}>()
+  lot: Lot;
+  selected?: boolean;
+  leaving?: boolean;
+}>();
 
 defineEmits<{
-  click: []
-}>()
+  click: [];
+}>();
 
 const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
-  good: { cls: 'good', label: 'Foydali', icon: 'trendUp' },
-  edge: { cls: 'edge', label: 'Chegarada', icon: 'alert' },
-  bad: { cls: 'bad', label: 'Foydasiz', icon: 'x' },
-}
+  good: { cls: "good", label: "Foydali", icon: "trendUp" },
+  edge: { cls: "edge", label: "Chegarada", icon: "alert" },
+  bad: { cls: "bad", label: "Foydasiz", icon: "x" },
+};
 </script>
 
 <template>
@@ -38,9 +38,13 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
       <span>{{ lot.customer }}</span>
     </div>
     <div class="lc-foot">
-      <span class="chip"><BaseIcon name="coins" />{{ compactSom(lot.maxPrice) }} so'm</span>
+      <span class="chip"
+        ><BaseIcon name="coins" />{{ compactSom(lot.maxPrice) }} so'm</span
+      >
       <span :class="['chip', VIAB[lot.pricing.verdict].cls]">
-        <BaseIcon :name="VIAB[lot.pricing.verdict].icon" />{{ VIAB[lot.pricing.verdict].label }}
+        <BaseIcon :name="VIAB[lot.pricing.verdict].icon" />{{
+          VIAB[lot.pricing.verdict].label
+        }}
       </span>
       <span
         v-if="!deadline(lot.deadlineH).closed"

@@ -1,22 +1,30 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps<{
-  counts: { pending: number; accepted: number; rejected: number }
-}>()
+  counts: { pending: number; accepted: number; rejected: number };
+}>();
 
-const total = computed(() => props.counts.pending + props.counts.accepted + props.counts.rejected || 1)
-const a = computed(() => (props.counts.accepted / total.value) * 100)
-const r = computed(() => (props.counts.rejected / total.value) * 100)
-const gradient = computed(() =>
-  `conic-gradient(var(--good) 0 ${a.value}%, var(--bad) ${a.value}% ${a.value + r.value}%, var(--warn) ${a.value + r.value}% 100%)`
-)
+const total = computed(
+  () =>
+    props.counts.pending + props.counts.accepted + props.counts.rejected || 1,
+);
+const a = computed(() => (props.counts.accepted / total.value) * 100);
+const r = computed(() => (props.counts.rejected / total.value) * 100);
+const gradient = computed(
+  () =>
+    `conic-gradient(var(--good) 0 ${a.value}%, var(--bad) ${a.value}% ${a.value + r.value}%, var(--warn) ${a.value + r.value}% 100%)`,
+);
 
 const segs = computed(() => [
-  { color: 'var(--good)', label: 'Qabul qilingan', count: props.counts.accepted },
-  { color: 'var(--bad)', label: 'Rad etilgan', count: props.counts.rejected },
-  { color: 'var(--warn)', label: 'Kutilmoqda', count: props.counts.pending },
-])
+  {
+    color: "var(--good)",
+    label: "Qabul qilingan",
+    count: props.counts.accepted,
+  },
+  { color: "var(--bad)", label: "Rad etilgan", count: props.counts.rejected },
+  { color: "var(--warn)", label: "Kutilmoqda", count: props.counts.pending },
+]);
 </script>
 
 <template>

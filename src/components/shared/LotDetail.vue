@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import type { Lot } from '@/types/lot'
-import BaseIcon from '@/components/shared/BaseIcon.vue'
-import MatchRing from '@/components/shared/MatchRing.vue'
-import PipelineBlock from '@/components/shared/PipelineBlock.vue'
-import SpecsTable from '@/components/shared/SpecsTable.vue'
-import PricingBlock from '@/components/shared/PricingBlock.vue'
-import EmptyState from '@/components/shared/EmptyState.vue'
-import { fmtNum, compactSom, deadline } from '@/lib/formatters'
+import type { Lot } from "@/types/lot";
+import BaseIcon from "@/components/shared/BaseIcon.vue";
+import MatchRing from "@/components/shared/MatchRing.vue";
+import PipelineBlock from "@/components/shared/PipelineBlock.vue";
+import SpecsTable from "@/components/shared/SpecsTable.vue";
+import PricingBlock from "@/components/shared/PricingBlock.vue";
+import EmptyState from "@/components/shared/EmptyState.vue";
+import { fmtNum, compactSom, deadline } from "@/lib/formatters";
 
 const props = defineProps<{
-  lot: Lot | null
-}>()
+  lot: Lot | null;
+}>();
 
 const emit = defineEmits<{
-  accept: [id: string]
-  reject: [id: string]
-  undo: [id: string]
-}>()
+  accept: [id: string];
+  reject: [id: string];
+  undo: [id: string];
+}>();
 </script>
 
 <template>
@@ -38,10 +38,16 @@ const emit = defineEmits<{
             </div>
             <h1 class="d-title">{{ lot.title }}</h1>
             <div class="d-cust">
-              <BaseIcon name="building" :style="{ width: '15px', height: '15px', opacity: 0.7 }" />
+              <BaseIcon
+                name="building"
+                :style="{ width: '15px', height: '15px', opacity: 0.7 }"
+              />
               {{ lot.customer }}
               <span class="sep" />
-              <BaseIcon name="map" :style="{ width: '14px', height: '14px', opacity: 0.7 }" />
+              <BaseIcon
+                name="map"
+                :style="{ width: '14px', height: '14px', opacity: 0.7 }"
+              />
               {{ lot.region }}
             </div>
           </div>
@@ -59,16 +65,37 @@ const emit = defineEmits<{
             <div class="mb-val mono">{{ compactSom(lot.maxPrice) }}</div>
             <div class="mb-sub">so'm</div>
           </div>
-          <div :class="['meta-box', { urgent: deadline(lot.deadlineH).urgent && !deadline(lot.deadlineH).closed }]">
+          <div
+            :class="[
+              'meta-box',
+              {
+                urgent:
+                  deadline(lot.deadlineH).urgent &&
+                  !deadline(lot.deadlineH).closed,
+              },
+            ]"
+          >
             <div class="mb-label">
               <BaseIcon name="clock" />
-              {{ deadline(lot.deadlineH).closed ? 'Holat' : 'Muddat tugashiga' }}
+              {{
+                deadline(lot.deadlineH).closed ? "Holat" : "Muddat tugashiga"
+              }}
             </div>
             <div class="mb-val">
-              {{ deadline(lot.deadlineH).closed ? 'Yopilgan' : deadline(lot.deadlineH).text }}
+              {{
+                deadline(lot.deadlineH).closed
+                  ? "Yopilgan"
+                  : deadline(lot.deadlineH).text
+              }}
             </div>
             <div class="mb-sub">
-              {{ deadline(lot.deadlineH).closed ? 'tender yopilgan' : deadline(lot.deadlineH).urgent ? 'shoshilinch' : 'qoldi' }}
+              {{
+                deadline(lot.deadlineH).closed
+                  ? "tender yopilgan"
+                  : deadline(lot.deadlineH).urgent
+                    ? "shoshilinch"
+                    : "qoldi"
+              }}
             </div>
           </div>
         </div>
@@ -82,16 +109,23 @@ const emit = defineEmits<{
             <BaseIcon :name="lot.status === 'accepted' ? 'check' : 'x'" />
           </div>
           <div>
-            <div class="ds-t">{{ lot.status === 'accepted' ? 'Qabul qilingan' : 'Rad etilgan' }}</div>
+            <div class="ds-t">
+              {{ lot.status === "accepted" ? "Qabul qilingan" : "Rad etilgan" }}
+            </div>
             <div class="ds-s">{{ lot.decidedBy }} · {{ lot.decidedAgo }}</div>
           </div>
-          <button class="undo-btn" @click="emit('undo', lot.id)">Navbatga qaytarish</button>
+          <button class="undo-btn" @click="emit('undo', lot.id)">
+            Navbatga qaytarish
+          </button>
         </div>
 
         <!-- Match analysis section -->
         <div class="section">
           <div class="section-head">
-            <div class="sh-icon" style="background: var(--accent-soft); color: var(--accent-ink)">
+            <div
+              class="sh-icon"
+              style="background: var(--accent-soft); color: var(--accent-ink)"
+            >
               <BaseIcon name="sparkle" />
             </div>
             <h2>Moslik tahlili</h2>
@@ -103,7 +137,10 @@ const emit = defineEmits<{
         <!-- Specs section -->
         <div class="section">
           <div class="section-head">
-            <div class="sh-icon" style="background: var(--surface-3); color: var(--ink-2)">
+            <div
+              class="sh-icon"
+              style="background: var(--surface-3); color: var(--ink-2)"
+            >
               <BaseIcon name="flag" />
             </div>
             <h2>Texnik xususiyatlar</h2>
@@ -115,7 +152,10 @@ const emit = defineEmits<{
         <!-- Pricing section -->
         <div class="section">
           <div class="section-head">
-            <div class="sh-icon" style="background: var(--surface-3); color: var(--ink-2)">
+            <div
+              class="sh-icon"
+              style="background: var(--surface-3); color: var(--ink-2)"
+            >
               <BaseIcon name="scale" />
             </div>
             <h2>Narx va foydalilik</h2>
@@ -129,9 +169,14 @@ const emit = defineEmits<{
     <!-- Action bar (only for pending lots) -->
     <div v-if="lot.status === 'pending'" class="action-bar">
       <div class="ab-hint">
-        <BaseIcon name="cpu" :style="{ width: '14px', height: '14px', opacity: 0.6 }" />
+        <BaseIcon
+          name="cpu"
+          :style="{ width: '14px', height: '14px', opacity: 0.6 }"
+        />
         Yakuniy qarorni menejer qabul qiladi
-        <span style="margin-left: 8px"><kbd>R</kbd> rad · <kbd>A</kbd> qabul</span>
+        <span style="margin-left: 8px"
+          ><kbd>R</kbd> rad · <kbd>A</kbd> qabul</span
+        >
       </div>
       <button class="btn btn-reject btn-lg" @click="emit('reject', lot.id)">
         <BaseIcon name="x" /> Rad etish

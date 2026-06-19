@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { FunnelStage } from '@/types/stock'
-import { fmtNum } from '@/lib/formatters'
+import type { FunnelStage } from "@/types/stock";
+import { fmtNum } from "@/lib/formatters";
 
 const props = defineProps<{
-  data: FunnelStage[]
-}>()
+  data: FunnelStage[];
+}>();
 
-const max = Math.max(...props.data.map(d => d.value))
+const max = Math.max(...props.data.map((d) => d.value));
 </script>
 
 <template>
@@ -23,7 +23,12 @@ const max = Math.max(...props.data.map(d => d.value))
       </div>
       <div class="funnel-meta">
         {{ d.label }}
-        <template v-if="i > 0"> · <b>{{ Math.round((d.value / data[i - 1].value) * 100) }}%</b></template>
+        <template v-if="i > 0">
+          ·
+          <b
+            >{{ Math.round((d.value / data[i - 1].value) * 100) }}%</b
+          ></template
+        >
       </div>
     </div>
   </div>

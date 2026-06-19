@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ICON_PATHS } from '@/lib/icons'
+import { ICON_PATHS } from "@/lib/icons";
 
 const props = defineProps<{
-  name: string
-}>()
+  name: string;
+}>();
 
-const path = ICON_PATHS[props.name] ?? ''
+const path = ICON_PATHS[props.name] ?? "";
 </script>
 
 <template>

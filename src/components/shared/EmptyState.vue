@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import BaseIcon from '@/components/shared/BaseIcon.vue'
+import BaseIcon from "@/components/shared/BaseIcon.vue";
 
 defineProps<{
-  icon: string
-  title: string
-  description: string
-}>()
+  icon: string;
+  title: string;
+  description: string;
+}>();
 </script>
 
 <template>

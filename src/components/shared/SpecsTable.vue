@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import type { LotSpec } from '@/types/lot'
-import BaseIcon from '@/components/shared/BaseIcon.vue'
+import type { LotSpec } from "@/types/lot";
+import BaseIcon from "@/components/shared/BaseIcon.vue";
 
 defineProps<{
-  specs: LotSpec[]
-}>()
+  specs: LotSpec[];
+}>();
 
 const FLAG: Record<string, { cls: string; icon: string }> = {
-  ok: { cls: 'ok', icon: 'check' },
-  part: { cls: 'part', icon: 'minus' },
-  no: { cls: 'no', icon: 'x' },
-}
+  ok: { cls: "ok", icon: "check" },
+  part: { cls: "part", icon: "minus" },
+  no: { cls: "no", icon: "x" },
+};
 </script>
 
 <template>
