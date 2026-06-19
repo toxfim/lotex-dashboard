@@ -1,0 +1,51 @@
+import type { StockItem, DayDecision, FunnelStage, AnalyticsData } from '@/types/stock'
+
+export const STOCK: StockItem[] = [
+  { code: 'MED-NTR-M-018', name: "Nitril qo'lqop M (ko'k, steril emas)", cat: 'Tibbiyot', avail: 318000, cap: 400000, unit: 'dona', cost: 520, reorder: 80000 },
+  { code: 'MED-MSK-3L-013', name: 'Tibbiy niqob 3 qatlam (rezinkali)', cat: 'Tibbiyot', avail: 620000, cap: 800000, unit: 'dona', cost: 195, reorder: 150000 },
+  { code: 'MED-SHP-5-021', name: 'Shprits 5 ml 2K (igna 0.7×38)', cat: 'Tibbiyot', avail: 850000, cap: 1000000, unit: 'dona', cost: 235, reorder: 200000 },
+  { code: 'MED-ANT-1L-022', name: 'Antiseptik eritma 1 L (spirtli)', cat: 'Tibbiyot', avail: 9400, cap: 20000, unit: 'dona', cost: 18500, reorder: 4000 },
+  { code: 'KAN-A4-80-004', name: "A4 qog'oz 80 g/m² (SvetoCopy)", cat: 'Kanstovarlar', avail: 11200, cap: 20000, unit: 'pachka', cost: 23800, reorder: 5000 },
+  { code: 'KAN-PEN-BL-007', name: "Sharikli ruchka, ko'k", cat: 'Kanstovarlar', avail: 48000, cap: 60000, unit: 'dona', cost: 1100, reorder: 12000 },
+  { code: 'ELC-LED-100-027', name: 'LED konsol chiroq 100W IP66 5000K', cat: 'Elektr jihozlari', avail: 1650, cap: 3000, unit: 'dona', cost: 312000, reorder: 600 },
+  { code: 'ELC-AVT-3P-051', name: 'Modulli avtomat 3P C40 / C50', cat: 'Elektr jihozlari', avail: 920, cap: 2500, unit: 'dona', cost: 41000, reorder: 500 },
+  { code: 'ELC-KBL-25-019', name: 'Kabel VVG 3×2.5 mm² (mis)', cat: 'Elektr jihozlari', avail: 32000, cap: 50000, unit: 'metr', cost: 11200, reorder: 8000 },
+  { code: 'ELC-SOK-16-033', name: 'Rozetka 16A o\'rnatma (oq)', cat: 'Elektr jihozlari', avail: 14200, cap: 20000, unit: 'dona', cost: 9800, reorder: 4000 },
+  { code: 'IT-NB-I5-009', name: 'Noutbuk 15.6" i5-1235U 16/512', cat: 'IT jihozlari', avail: 74, cap: 200, unit: 'dona', cost: 7150000, reorder: 40 },
+  { code: 'IT-MON-24-011', name: 'Monitor 23.8" IPS FHD (HDMI/VGA)', cat: 'IT jihozlari', avail: 190, cap: 300, unit: 'dona', cost: 1280000, reorder: 60 },
+  { code: 'IT-SRV-1X-003', name: 'Server 1U 1×Xeon 32GB', cat: 'IT jihozlari', avail: 6, cap: 30, unit: 'dona', cost: 88000000, reorder: 10 },
+  { code: 'QUR-SEM-400-002', name: 'Portlandsement PC 400 D20 (50 kg)', cat: 'Qurilish materiallari', avail: 21500, cap: 40000, unit: 'qop', cost: 41000, reorder: 8000 },
+  { code: 'QUR-ARM-12-008', name: 'Armatura A500C, 12 mm', cat: 'Qurilish materiallari', avail: 64000, cap: 90000, unit: 'metr', cost: 12400, reorder: 15000 },
+  { code: 'QUR-BYO-AK-015', name: "Akril fasad bo'yoq oq 25 kg", cat: 'Qurilish materiallari', avail: 2300, cap: 4000, unit: 'vedro', cost: 142000, reorder: 800 },
+  { code: 'MEB-CHR-200-006', name: "Ofis kreslo Comfort-200 (to'r orqa)", cat: 'Mebel', avail: 410, cap: 600, unit: 'dona', cost: 480000, reorder: 120 },
+  { code: 'MEB-TBL-OF-012', name: 'Ofis stoli 140×70 sm (venge)', cat: 'Mebel', avail: 230, cap: 400, unit: 'dona', cost: 720000, reorder: 80 },
+]
+
+export const DECISIONS_7D: DayDecision[] = [
+  { day: 'Du', accepted: 5, rejected: 2 },
+  { day: 'Se', accepted: 7, rejected: 3 },
+  { day: 'Ch', accepted: 4, rejected: 4 },
+  { day: 'Pa', accepted: 8, rejected: 2 },
+  { day: 'Ju', accepted: 6, rejected: 5 },
+  { day: 'Sh', accepted: 3, rejected: 1 },
+  { day: 'Ya', accepted: 2, rejected: 1 },
+]
+
+export const FUNNEL: FunnelStage[] = [
+  { label: 'Skanerlangan lotlar', value: 8642, color: 'oklch(0.72 0.04 256)' },
+  { label: 'Vektor nomzodlari', value: 412, color: 'oklch(0.64 0.10 256)' },
+  { label: 'LLM tasdiqladi', value: 64, color: 'var(--accent)' },
+  { label: "Ko'rib chiqildi", value: 51, color: 'oklch(0.5 0.12 220)' },
+  { label: 'Qabul qilindi', value: 32, color: 'var(--good)' },
+]
+
+export const ANALYTICS: AnalyticsData = {
+  scannedWeek: 8642,
+  scannedDelta: 12.4,
+  matchedWeek: 64,
+  matchedDelta: 8.0,
+  acceptRate: 63,
+  acceptDelta: 4.0,
+  avgMargin: 18.6,
+  marginDelta: -1.3,
+}
