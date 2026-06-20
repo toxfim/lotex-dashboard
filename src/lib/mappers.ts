@@ -59,9 +59,10 @@ function parseSpecs(requirements: unknown): LotSpec[] {
     .map((r) => ({
       label: String(r.property_name ?? ""),
       req: String(r.user_value ?? "—"),
-      // Backend hozircha har bir talab bo'yicha o'z zaxiramiz qiymatini bermaydi.
-      ours: "—",
-      m: "part" as const,
+      // matched_value/match faqat detal endpointida keladi; ro'yxatda yo'q,
+      // shu sabab fallback bilan ("—" / "part") himoyalanamiz.
+      ours: String(r.matched_value ?? "—"),
+      m: r.match ?? "part",
     }));
 }
 

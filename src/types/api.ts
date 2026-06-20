@@ -24,6 +24,9 @@ export interface ApiLotRequirement {
   user_value: string;
   user_value_id?: number;
   pnum?: number;
+  // Quyidagilar faqat detal endpointida (/api/lots/:id) keladi, ro'yxatda emas.
+  matched_value?: string | null; // BIZNING ZAXIRA qiymati (yo'q bo'lsa null)
+  match?: "ok" | "part" | "no"; // MOSLIK holati
 }
 
 export interface ApiRecommendation {
