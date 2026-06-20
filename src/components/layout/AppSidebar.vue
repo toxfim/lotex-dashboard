@@ -15,6 +15,7 @@ const NAV = [
   { id: "queue", path: "/queue", label: "Navbat", icon: "inbox" },
   { id: "lots", path: "/lots", label: "Barcha lotlar", icon: "layers" },
   { id: "stock", path: "/stock", label: "Ombor", icon: "box" },
+  { id: "shop", path: "/shop", label: "Electron Shop", icon: "store" },
   { id: "analytics", path: "/analytics", label: "Analitika", icon: "chart" },
 ];
 
@@ -27,6 +28,12 @@ onMounted(() => {
 onUnmounted(() => {
   if (ticker) clearInterval(ticker);
 });
+
+// Sub-route'lar (masalan /shop/add) ona bo'limni faol ko'rsatsin.
+function isNavActive(id: string): boolean {
+  const name = route.name?.toString() ?? "";
+  return name === id || name.startsWith(id + "-");
+}
 
 const isActive = computed(() => status.value?.active ?? false);
 const lastSync = computed(() => {
@@ -51,7 +58,7 @@ const lastSync = computed(() => {
       <button
         v-for="n in NAV"
         :key="n.id"
-        :class="['nav-item', { active: route.name === n.id }]"
+        :class="['nav-item', { active: isNavActive(n.id) }]"
         @click="router.push(n.path)"
       >
         <BaseIcon :name="n.icon" />
@@ -75,12 +82,16 @@ const lastSync = computed(() => {
         {{ isActive ? "AI quvuri faol" : "AI quvuri kutilmoqda" }}
       </div>
       <div class="pc-stat">
-        <span>Skanerlandi</span><b class="num">{{ fmtNum(status?.scanned ?? 0) }}</b>
+        <span>Skanerlandi</span
+        ><b class="num">{{ fmtNum(status?.scanned ?? 0) }}</b>
       </div>
       <div class="pc-stat">
-        <span>Mos topildi</span><b class="num">{{ fmtNum(status?.matched ?? 0) }}</b>
+        <span>Mos topildi</span
+        ><b class="num">{{ fmtNum(status?.matched ?? 0) }}</b>
       </div>
-      <div class="pc-stat"><span>Oxirgi sinx.</span><b>{{ lastSync }}</b></div>
+      <div class="pc-stat">
+        <span>Oxirgi sinx.</span><b>{{ lastSync }}</b>
+      </div>
     </div>
 
     <div class="user-chip">

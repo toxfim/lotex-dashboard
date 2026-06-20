@@ -40,6 +40,13 @@ export const ICON_PATHS: Record<string, string> = {
   arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   filter: '<path d="M3 5h18l-7 8v6l-4-2v-4L3 5Z"/>',
   map: '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  image:
+    '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/>',
+  store:
+    '<path d="M3 9l1.4-5h15.2L21 9M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9M3 9h18M9 20v-6h6v6"/>',
+  arrowLeft: '<path d="M19 12H5M11 18l-6-6 6-6"/>',
+  tag: '<path d="M3 7.5V12l8.5 8.5a1.5 1.5 0 0 0 2.1 0l4.9-4.9a1.5 1.5 0 0 0 0-2.1L10 5H4.5A1.5 1.5 0 0 0 3 6.5Z"/><circle cx="7.2" cy="9.2" r="1.1"/>',
 };
 
 export type IconName = keyof typeof ICON_PATHS;
