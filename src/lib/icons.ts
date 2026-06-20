@@ -35,6 +35,7 @@ export const ICON_PATHS: Record<string, string> = {
   hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
   doc: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8M8 9h2"/>',
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-5"/>',
+  refresh: '<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>',
   flag: '<path d="M4 22V4M4 4l2-1h11l-2 4 2 4H6"/>',
   arrowRight: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   filter: '<path d="M3 5h18l-7 8v6l-4-2v-4L3 5Z"/>',

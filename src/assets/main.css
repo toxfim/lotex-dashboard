@@ -774,6 +774,58 @@ body {
   max-width: 280px;
 }
 
+/* server down (navbat) */
+.server-down {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  padding: 40px;
+  color: var(--ink-4);
+}
+.server-down .sd-memes img {
+  display: block;
+  max-width: 280px;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-3);
+}
+.server-down .sd-text h3 {
+  color: var(--ink-2);
+  font-size: 15px;
+  font-weight: 650;
+}
+.server-down .sd-text p {
+  font-size: 13px;
+  max-width: 320px;
+  margin: 4px auto 0;
+}
+.server-down .sd-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+.server-down .sd-retry:hover {
+  background: var(--accent-press);
+}
+.server-down .sd-retry svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* detail header */
 .d-head {
   display: flex;

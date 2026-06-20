@@ -6,6 +6,7 @@ import BaseIcon from "@/components/shared/BaseIcon.vue";
 import LotCard from "@/components/shared/LotCard.vue";
 import LotDetail from "@/components/shared/LotDetail.vue";
 import EmptyState from "@/components/shared/EmptyState.vue";
+import ServerDownState from "@/components/shared/ServerDownState.vue";
 import type { Lot, LotStatus } from "@/types/lot";
 
 const queueStore = useQueueStore();
@@ -16,6 +17,13 @@ const query = ref("");
 const sort = ref<"match" | "deadline" | "value">("match");
 const sel = ref<string | null>(null);
 const leaving = ref<string | null>(null);
+// Birinchi yuklash xato bo'lganda 1 ta meme; har "Qayta urinish"da bittadan ko'payadi.
+const retryCount = ref(1);
+
+async function retryLoad() {
+  retryCount.value += 1;
+  await queueStore.fetchQueue().catch(() => {});
+}
 
 const SORTS: Record<string, { label: string; fn: (a: Lot, b: Lot) => number }> =
   {
@@ -217,11 +225,10 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
           title="Yuklanmoqda…"
           description="Navbat serverdan olinmoqda."
         />
-        <EmptyState
+        <ServerDownState
           v-else-if="queueStore.error"
-          icon="inbox"
-          title="Navbatni yuklab bo'lmadi"
-          :description="queueStore.error"
+          :retry-count="retryCount"
+          @retry="retryLoad"
         />
         <EmptyState
           v-else-if="visible.length === 0"
