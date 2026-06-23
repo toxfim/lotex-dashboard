@@ -5,6 +5,11 @@ import type {
   ApiRecommendationWithLot,
   Paginated,
 } from "@/types/api";
+import type {
+  ApiCredential,
+  CredentialCreate,
+  CredentialUpdate,
+} from "@/types/credential";
 
 // Backendga proxy qilinadigan prefiks (vite.config.ts → server.proxy).
 const BASE = "/api";
@@ -97,6 +102,54 @@ export const api = {
     return request<{ data: ApiRecommendation }>(
       `/recommendations/${encodeURIComponent(id)}`,
       { method: "PATCH", body: JSON.stringify({ managerDecision }) },
+    );
+  },
+
+  /** GET /api/credentials — magazin credentiallari (maxfiy maydonlar maskalangan). */
+  getCredentials(): Promise<{ data: ApiCredential[] }> {
+    return request<{ data: ApiCredential[] }>("/credentials");
+  },
+
+  /** POST /api/credentials — key/sugar/api-agent'ni qo'lda kiritib credential qo'shadi. */
+  createCredential(body: CredentialCreate): Promise<{ data: ApiCredential }> {
+    return request<{ data: ApiCredential }>("/credentials", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** POST /api/credentials/import — raw fetch yoki cURL'dan credential qo'shadi. */
+  importCredential(raw: string): Promise<{ data: ApiCredential }> {
+    return request<{ data: ApiCredential }>("/credentials/import", {
+      method: "POST",
+      body: JSON.stringify({ raw }),
+    });
+  },
+
+  /** PATCH /api/credentials/:id — auth kirishlarini yangilab qayta-auth qiladi. */
+  updateCredential(
+    id: string,
+    body: CredentialUpdate,
+  ): Promise<{ data: ApiCredential }> {
+    return request<{ data: ApiCredential }>(
+      `/credentials/${encodeURIComponent(id)}`,
+      { method: "PATCH", body: JSON.stringify(body) },
+    );
+  },
+
+  /** Bo'sh PATCH — saqlangan kirishlar bilan tokenni darhol qayta oladi. */
+  reauthorizeCredential(id: string): Promise<{ data: ApiCredential }> {
+    return request<{ data: ApiCredential }>(
+      `/credentials/${encodeURIComponent(id)}`,
+      { method: "PATCH", body: JSON.stringify({}) },
+    );
+  },
+
+  /** DELETE /api/credentials/:id — yumshoq o'chirish (status DELETED). */
+  deleteCredential(id: string): Promise<{ data: ApiCredential }> {
+    return request<{ data: ApiCredential }>(
+      `/credentials/${encodeURIComponent(id)}`,
+      { method: "DELETE" },
     );
   },
 };

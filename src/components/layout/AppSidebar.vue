@@ -71,7 +71,12 @@ const lastSync = computed(() => {
         </span>
       </button>
       <div class="nav-label">Tizim</div>
-      <button class="nav-item"><BaseIcon name="settings" />Sozlamalar</button>
+      <button
+        :class="['nav-item', { active: isNavActive('settings') }]"
+        @click="router.push('/settings')"
+      >
+        <BaseIcon name="settings" />Sozlamalar
+      </button>
     </nav>
 
     <div class="sidebar-spacer" />
