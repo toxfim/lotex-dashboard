@@ -16,6 +16,7 @@ const NAV = [
   { id: "lots", path: "/lots", label: "Barcha lotlar", icon: "layers" },
   { id: "stock", path: "/stock", label: "Ombor", icon: "box" },
   { id: "shop", path: "/shop", label: "Electron Shop", icon: "store" },
+  { id: "suppliers", path: "/suppliers", label: "Ta'minot", icon: "package" },
   { id: "analytics", path: "/analytics", label: "Analitika", icon: "chart" },
 ];
 

@@ -33,6 +33,18 @@ const router = createRouter({
       component: () => import("@/views/AddProductView.vue"),
     },
     {
+      path: "/suppliers",
+      name: "suppliers",
+      component: () => import("@/views/SuppliersView.vue"),
+    },
+    {
+      // Barcha ta'minot tovarlari (supplies). ?supplier=<id> bo'lsa — faqat o'sha
+      // ta'minotchi tovarlari. Bir xil komponent (SuppliersView) tab'ni route'dan oladi.
+      path: "/supplies",
+      name: "suppliers-all",
+      component: () => import("@/views/SuppliersView.vue"),
+    },
+    {
       path: "/analytics",
       name: "analytics",
       component: () => import("@/views/AnalyticsView.vue"),
