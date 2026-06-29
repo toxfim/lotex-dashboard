@@ -10,12 +10,14 @@ export type ApiRecommendationStatus =
   | "NOT_FOUND";
 export type ApiManagerDecision = "PENDING" | "ACCEPTED" | "REJECTED";
 
-/** Recommendation.matchedStock ichidagi ISHipment snapshotning ishlatadigan qismi. */
+/** Recommendation.matchedStock ichidagi supplier-tovar snapshotining ishlatadigan qismi. */
 export interface ApiMatchedStock {
   title?: string | null;
   sku?: string | null;
   actualCost?: number | null;
   recommendedPrice?: number | null;
+  // supplier-based matching: mos topilgan ta'minotchi nomi (mavjud bo'lsa)
+  supplierName?: string | null;
 }
 
 /** Lot.requirements (js_properties) elementi — texnik talab. */

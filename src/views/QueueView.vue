@@ -2,6 +2,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useQueueStore } from "@/stores/queue";
 import { useToast } from "@/composables/useToast";
+import { useMatchRunner } from "@/composables/useMatchRunner";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import LotCard from "@/components/shared/LotCard.vue";
 import LotDetail from "@/components/shared/LotDetail.vue";
@@ -11,6 +12,10 @@ import type { Lot, LotStatus } from "@/types/lot";
 
 const queueStore = useQueueStore();
 const { pushToast } = useToast();
+// "Hozir match qil" — tugagach navbatni qayta yuklaymiz (yangi mosliklar chiqsin)
+const { matchBusy, matchNote, runMatchNow } = useMatchRunner(() =>
+  queueStore.fetchQueue().catch(() => {}),
+);
 
 const tab = ref<LotStatus>("pending");
 const query = ref("");
@@ -184,12 +189,35 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
           v-model="query"
         />
       </div>
+      <button
+        class="btn btn-ghost"
+        :disabled="matchBusy"
+        title="Tender lotlarini ta'minotchi tovarlariga qayta moslaydi"
+        @click="runMatchNow"
+      >
+        <BaseIcon name="cpu" />{{
+          matchBusy ? "Matching ketmoqda…" : "Hozir match qil"
+        }}
+      </button>
       <button class="icon-btn">
         <BaseIcon name="bell" /><span class="badge-dot" />
       </button>
       <button class="icon-btn"><BaseIcon name="settings" /></button>
     </div>
   </header>
+
+  <div
+    v-if="matchNote"
+    class="import-note"
+    :class="matchNote.kind"
+    style="margin: 0 22px 0"
+  >
+    <BaseIcon :name="matchNote.kind === 'ok' ? 'cpu' : 'alert'" />
+    {{ matchNote.text }}
+    <button class="import-x" @click="matchNote = null">
+      <BaseIcon name="x" />
+    </button>
+  </div>
 
   <div class="workspace">
     <div class="list-pane">

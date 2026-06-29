@@ -71,10 +71,11 @@ function buildStock(rec: ApiRecommendation, unit: string): MatchStock {
   return {
     code: rec.matchedSku ?? snapshot.sku ?? "—",
     name: rec.matchedStockName || snapshot.title || "Mos tovar",
-    // ISHipment snapshotda mavjud qoldiq miqdori yo'q.
+    // supplier tovarida qoldiq miqdori yo'q — o'rniga ta'minotchi ko'rsatiladi.
     avail: 0,
     unit,
     cost: rec.costPrice ?? snapshot.actualCost ?? 0,
+    supplier: snapshot.supplierName ?? null,
   };
 }
 

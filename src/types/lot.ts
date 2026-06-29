@@ -11,6 +11,8 @@ export interface MatchStock {
   avail: number;
   unit: string;
   cost: number;
+  /** supplier-based matching: mos topilgan ta'minotchi nomi (mavjud bo'lsa). */
+  supplier?: string | null;
 }
 
 export interface LotMatch {
