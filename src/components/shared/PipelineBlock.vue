@@ -90,8 +90,16 @@ const LLM_MAP: Record<string, { label: string; cls: string; icon: string }> = {
         <div class="si-code">{{ lot.match.stock.code }}</div>
       </div>
       <div class="stock-avail">
-        <div class="sa-v num">{{ fmtNum(lot.match.stock.avail) }}</div>
-        <div class="sa-l">{{ lot.match.stock.unit }} zaxirada</div>
+        <template v-if="lot.match.stock.supplier">
+          <div class="sa-v" style="font-size: 13px">
+            {{ lot.match.stock.supplier }}
+          </div>
+          <div class="sa-l">ta'minotchi</div>
+        </template>
+        <template v-else>
+          <div class="sa-v num">{{ fmtNum(lot.match.stock.avail) }}</div>
+          <div class="sa-l">{{ lot.match.stock.unit }} zaxirada</div>
+        </template>
       </div>
     </div>
 

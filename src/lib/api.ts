@@ -10,6 +10,16 @@ import type {
   CredentialCreate,
   CredentialUpdate,
 } from "@/types/credential";
+import type {
+  ApiSupplier,
+  ApiSupplierProduct,
+  ApiSupplierProductWithSupplier,
+  SupplierConfirmResult,
+  SupplierCreate,
+  SupplierMappingSpec,
+  SupplierUpdate,
+  SupplierUploadResult,
+} from "@/types/supplier";
 
 // Backendga proxy qilinadigan prefiks (vite.config.ts → server.proxy).
 const BASE = "/api";
@@ -33,6 +43,29 @@ export interface GetRecommendationsParams {
   search?: string;
   sortBy?: "createdAt" | "confidence" | "recommendedPrice" | "costPrice";
   order?: "asc" | "desc";
+}
+
+export interface GetSuppliersParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  isActive?: boolean;
+  sortBy?: "createdAt" | "name" | "updatedAt";
+  order?: "asc" | "desc";
+}
+
+export interface GetSupplierProductsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface GetAllSupplierProductsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  supplierId?: string;
+  category?: string;
 }
 
 function buildQuery(
@@ -67,6 +100,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const message =
       body && typeof body === "object" && "error" in body
         ? String((body as { error: unknown }).error)
+        : res.statusText;
+    throw new Error(`Lotex API ${res.status}: ${message}`);
+  }
+
+  return (await res.json()) as T;
+}
+
+/** multipart/form-data yuborish — Content-Type'ni brauzer (boundary bilan) o'rnatadi. */
+async function upload<T>(path: string, body: FormData): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method: "POST",
+      headers: { Accept: "application/json" },
+      body,
+    });
+  } catch (cause) {
+    throw new Error(`Lotex API yuklash muvaffaqiyatsiz (${path})`, { cause });
+  }
+
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => null);
+    const message =
+      errBody && typeof errBody === "object" && "error" in errBody
+        ? String((errBody as { error: unknown }).error)
         : res.statusText;
     throw new Error(`Lotex API ${res.status}: ${message}`);
   }
@@ -150,6 +208,129 @@ export const api = {
     return request<{ data: ApiCredential }>(
       `/credentials/${encodeURIComponent(id)}`,
       { method: "DELETE" },
+    );
+  },
+
+  // ------------------------------------------------------------- ta'minotchilar
+  /** GET /api/suppliers — paginatsiyalangan ta'minotchilar (tovar/upload soni bilan). */
+  getSuppliers(
+    params: GetSuppliersParams = {},
+  ): Promise<Paginated<ApiSupplier>> {
+    return request<Paginated<ApiSupplier>>(
+      `/suppliers${buildQuery({ ...params })}`,
+    );
+  },
+
+  /** GET /api/suppliers/:id — bitta ta'minotchi. */
+  getSupplier(id: string): Promise<{ data: ApiSupplier }> {
+    return request<{ data: ApiSupplier }>(
+      `/suppliers/${encodeURIComponent(id)}`,
+    );
+  },
+
+  /** GET /api/suppliers/:id/products — ta'minotchi narx-ro'yxati tovarlari. */
+  getSupplierProducts(
+    id: string,
+    params: GetSupplierProductsParams = {},
+  ): Promise<Paginated<ApiSupplierProduct>> {
+    return request<Paginated<ApiSupplierProduct>>(
+      `/suppliers/${encodeURIComponent(id)}/products${buildQuery({ ...params })}`,
+    );
+  },
+
+  /** GET /api/supplier-products — barcha ta'minotchilar tovarlari (supplier+kategoriya filtri). */
+  getAllSupplierProducts(
+    params: GetAllSupplierProductsParams = {},
+  ): Promise<Paginated<ApiSupplierProductWithSupplier>> {
+    return request<Paginated<ApiSupplierProductWithSupplier>>(
+      `/supplier-products${buildQuery({ ...params })}`,
+    );
+  },
+
+  /** GET /api/supplier-products/categories — filtr uchun mavjud kategoriyalar. */
+  getSupplierCategories(supplierId?: string): Promise<{ data: string[] }> {
+    return request<{ data: string[] }>(
+      `/supplier-products/categories${buildQuery({ supplierId })}`,
+    );
+  },
+
+  // ------------------------------------------------------------------- matching
+  /** POST /api/matching/run — supplier-based matching siklini darhol ishga tushiradi (fon). */
+  runMatching(): Promise<{ data: { status: string } }> {
+    return request<{ data: { status: string } }>("/matching/run", {
+      method: "POST",
+    });
+  },
+
+  /** GET /api/matching/status — qo'lda ishga tushirilgan matching holati. */
+  getMatchingStatus(): Promise<{
+    data: {
+      running: boolean;
+      lastResult: { matched: number; notFound: number } | null;
+      lastRunAt: string | null;
+      lastError: string | null;
+    };
+  }> {
+    return request("/matching/status");
+  },
+
+  /** POST /api/suppliers — yangi ta'minotchi. */
+  createSupplier(body: SupplierCreate): Promise<{ data: ApiSupplier }> {
+    return request<{ data: ApiSupplier }>("/suppliers", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** PATCH /api/suppliers/:id — tahrirlash / isActive. */
+  updateSupplier(
+    id: string,
+    body: SupplierUpdate,
+  ): Promise<{ data: ApiSupplier }> {
+    return request<{ data: ApiSupplier }>(
+      `/suppliers/${encodeURIComponent(id)}`,
+      { method: "PATCH", body: JSON.stringify(body) },
+    );
+  },
+
+  /** DELETE /api/suppliers/:id — yumshoq o'chirish (isActive=false). */
+  deleteSupplier(id: string): Promise<{ data: ApiSupplier }> {
+    return request<{ data: ApiSupplier }>(
+      `/suppliers/${encodeURIComponent(id)}`,
+      { method: "DELETE" },
+    );
+  },
+
+  /**
+   * POST /api/suppliers/:id/uploads — Excel narx-ro'yxatini yuklaydi (multipart).
+   * Saqlangan shablon bo'lsa darhol parse qiladi (`status: "parsed"`); aks holda
+   * mapping taklifi bilan tasdiq kutadi (`status: "pending_mapping"`).
+   */
+  uploadSupplierFile(
+    id: string,
+    file: File,
+    sourceLabel?: string,
+  ): Promise<{ data: SupplierUploadResult }> {
+    const form = new FormData();
+    form.set("file", file);
+    if (sourceLabel) form.set("sourceLabel", sourceLabel);
+    return upload<{ data: SupplierUploadResult }>(
+      `/suppliers/${encodeURIComponent(id)}/uploads`,
+      form,
+    );
+  },
+
+  /**
+   * POST /api/suppliers/uploads/:uploadId/confirm — tasdiqlangan/tuzatilgan
+   * mapping bilan tovarlarni o'qib saqlaydi va shablonni saqlaydi.
+   */
+  confirmSupplierMapping(
+    uploadId: string,
+    mapping: SupplierMappingSpec,
+  ): Promise<{ data: SupplierConfirmResult }> {
+    return request<{ data: SupplierConfirmResult }>(
+      `/suppliers/uploads/${encodeURIComponent(uploadId)}/confirm`,
+      { method: "POST", body: JSON.stringify({ mapping }) },
     );
   },
 };
