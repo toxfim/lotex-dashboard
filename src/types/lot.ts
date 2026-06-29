@@ -40,6 +40,8 @@ export interface Lot {
   /** Backend Recommendation id — manager qarorini saqlash uchun (mavjud bo'lsa). */
   recommendationId?: string;
   lotNo: string;
+  /** uzex lot_id (xarid.uzex.uz havolasi uchun). */
+  buyerLotId?: number | null;
   category: string;
   title: string;
   customer: string;
