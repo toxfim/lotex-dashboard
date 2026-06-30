@@ -9,10 +9,10 @@ import {
   shopSub,
 } from "@/data/shop";
 import { fmtSom } from "@/lib/formatters";
-import type { ShopProduct } from "@/types/shop";
+import type { ApiShopProduct } from "@/types/shop";
 
 const props = defineProps<{
-  product: ShopProduct;
+  product: ApiShopProduct;
 }>();
 
 const emit = defineEmits<{

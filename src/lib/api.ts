@@ -10,6 +10,7 @@ import type {
   CredentialCreate,
   CredentialUpdate,
 } from "@/types/credential";
+import type { ApiShopProduct, ShopProductDraft, ShopStatus } from "@/types/shop";
 import type {
   ApiSupplier,
   ApiSupplierProduct,
@@ -66,6 +67,16 @@ export interface GetAllSupplierProductsParams {
   search?: string;
   supplierId?: string;
   category?: string;
+}
+
+export interface GetShopProductsParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  cat?: string;
+  status?: ShopStatus;
+  sortBy?: "createdAt" | "name" | "price";
+  order?: "asc" | "desc";
 }
 
 function buildQuery(
@@ -331,6 +342,61 @@ export const api = {
     return request<{ data: SupplierConfirmResult }>(
       `/suppliers/uploads/${encodeURIComponent(uploadId)}/confirm`,
       { method: "POST", body: JSON.stringify({ mapping }) },
+    );
+  },
+
+  // ---------------------------------------------------------- electron shop
+  /** GET /api/shop-products — paginatsiyalangan shop tovarlar. */
+  getShopProducts(
+    params: GetShopProductsParams = {},
+  ): Promise<Paginated<ApiShopProduct>> {
+    const mapped: Record<string, string | number | boolean | undefined> = {
+      ...params,
+      status: params.status?.toUpperCase(),
+    };
+    return request<Paginated<ApiShopProduct>>(
+      `/shop-products${buildQuery(mapped)}`,
+    );
+  },
+
+  /** GET /api/shop-products/:id */
+  getShopProduct(id: string): Promise<{ data: ApiShopProduct }> {
+    return request<{ data: ApiShopProduct }>(
+      `/shop-products/${encodeURIComponent(id)}`,
+    );
+  },
+
+  /** POST /api/shop-products — yangi tovar. */
+  createShopProduct(
+    draft: ShopProductDraft,
+    entityIds: string[],
+  ): Promise<{ data: ApiShopProduct }> {
+    return request<{ data: ApiShopProduct }>("/shop-products", {
+      method: "POST",
+      body: JSON.stringify({ ...draft, entities: entityIds }),
+    });
+  },
+
+  /** PATCH /api/shop-products/:id — tahrirlash / status. */
+  updateShopProduct(
+    id: string,
+    body: Partial<Pick<ApiShopProduct, "name" | "brand" | "price" | "entities" | "status" | "specs">>,
+  ): Promise<{ data: ApiShopProduct }> {
+    const mapped = {
+      ...body,
+      status: body.status?.toUpperCase(),
+    };
+    return request<{ data: ApiShopProduct }>(
+      `/shop-products/${encodeURIComponent(id)}`,
+      { method: "PATCH", body: JSON.stringify(mapped) },
+    );
+  },
+
+  /** DELETE /api/shop-products/:id */
+  deleteShopProduct(id: string): Promise<{ data: { id: string } }> {
+    return request<{ data: { id: string } }>(
+      `/shop-products/${encodeURIComponent(id)}`,
+      { method: "DELETE" },
     );
   },
 };

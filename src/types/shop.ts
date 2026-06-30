@@ -90,3 +90,18 @@ export interface ShopProductDraft {
   price: number;
   specs: [string, string][];
 }
+
+/** Backend API dan keladigan ShopProduct modeli. */
+export interface ApiShopProduct {
+  id: string;
+  cat: string;
+  sub: string;
+  name: string;
+  brand: string;
+  price: number;
+  entities: string[];
+  status: ShopStatus;
+  specs: [string, string][];
+  createdAt: string;
+  updatedAt: string;
+}

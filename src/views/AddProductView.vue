@@ -99,30 +99,44 @@ function goBack() {
   router.push("/shop");
 }
 
-function submit() {
-  if (!canSubmit.value || !sub.value) return;
+const submitting = ref(false);
+
+async function submit() {
+  if (!canSubmit.value || !sub.value || submitting.value) return;
+  submitting.value = true;
   const name = `${sub.value.name} ${brand.value}`.trim();
   const specPairs = sub.value.specs
-    .map((s): [string, string] => [s.label, String(vals.value[s.key] ?? "")])
+    .map((s): [string, string] => [s.label, String(vals.value[s.key] ?? “”)])
     .filter(([, v]) => v);
-  shopStore.addProduct(
-    {
-      cat: catId.value,
-      sub: subId.value,
-      name,
-      brand: brand.value,
-      price: Number(vals.value.price),
-      specs: specPairs,
-    },
-    [...entityIds.value],
-  );
-  pushToast({
-    kind: "acc",
-    title: "Tovar qo'shildi",
-    sub: `${entityIds.value.length} ta do'konga “${name}” kiritildi`,
-    undoId: "",
-  });
-  goBack();
+  try {
+    await shopStore.addProduct(
+      {
+        cat: catId.value,
+        sub: subId.value,
+        name,
+        brand: brand.value,
+        price: Number(vals.value.price),
+        specs: specPairs,
+      },
+      [...entityIds.value],
+    );
+    pushToast({
+      kind: “acc”,
+      title: “Tovar qo'shildi”,
+      sub: `${entityIds.value.length} ta do'konga “${name}” kiritildi`,
+      undoId: “”,
+    });
+    goBack();
+  } catch {
+    pushToast({
+      kind: “err”,
+      title: “Xatolik”,
+      sub: “Tovar qo'shishda xatolik yuz berdi”,
+      undoId: “”,
+    });
+  } finally {
+    submitting.value = false;
+  }
 }
 </script>
 

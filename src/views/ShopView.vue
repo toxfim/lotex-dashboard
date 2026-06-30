@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useShopStore } from "@/stores/shop";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
@@ -41,7 +41,6 @@ const filtered = computed(() => {
     });
 });
 
-// Filtrlangan tovarlarni katalog tartibida toifalar bo'yicha guruhlash.
 const groups = computed(() =>
   SHOP_CATEGORIES.map((c) => ({
     cat: c,
@@ -56,6 +55,10 @@ const openProduct = computed(() =>
 function goAdd() {
   router.push("/shop/add");
 }
+
+onMounted(() => {
+  shopStore.fetch({ limit: 200 });
+});
 </script>
 
 <template>
@@ -91,14 +94,25 @@ function goAdd() {
           >
         </div>
 
-        <div v-if="groups.length === 0" class="page-empty">
+        <div
+          v-if="shopStore.loading"
+          class="page-empty"
+          style="padding: 60px 0"
+        >
+          <div class="empty-mark" style="opacity: 0.4">
+            <BaseIcon name="store" />
+          </div>
+          <p>Yuklanmoqda…</p>
+        </div>
+
+        <div v-else-if="groups.length === 0" class="page-empty">
           <div class="empty-mark"><BaseIcon name="store" /></div>
           <h3>Hali tovar qo'shilmagan</h3>
           <p style="max-width: 320px">
             {{
               query || cat !== "all"
                 ? "Filtrlarga mos tovar topilmadi. Filtrlarni tozalab ko'ring."
-                : "“+ Tovar qo'shish” orqali birinchi tovaringizni katalogga kiriting."
+                : "\"+ Tovar qo'shish\" orqali birinchi tovaringizni katalogga kiriting."
             }}
           </p>
           <button
