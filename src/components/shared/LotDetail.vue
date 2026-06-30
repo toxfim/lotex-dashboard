@@ -35,6 +35,25 @@ const emit = defineEmits<{
             <div class="d-eyebrow">
               <span class="chip accent">{{ lot.category }}</span>
               <span class="d-lotno">{{ lot.lotNo }}</span>
+              <a
+                v-if="lot.buyerLotId"
+                class="uzex-link"
+                :href="`https://xarid.uzex.uz/shop/lot-details/${lot.buyerLotId}`"
+                target="_blank"
+                rel="noopener"
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 4px;
+                  font-size: 12px;
+                  font-weight: 600;
+                  color: var(--accent-ink);
+                  text-decoration: none;
+                "
+              >
+                <BaseIcon name="external" :style="{ width: '13px', height: '13px' }" />Uzex'da
+                ochish
+              </a>
             </div>
             <h1 class="d-title">{{ lot.title }}</h1>
             <div class="d-cust">

@@ -21,6 +21,12 @@ import type {
   SupplierUpdate,
   SupplierUploadResult,
 } from "@/types/supplier";
+import type {
+  PcBuildDetail,
+  PcBuildKpis,
+  PcBuildSummary,
+  UsdRate,
+} from "@/types/pc-build";
 
 // Backendga proxy qilinadigan prefiks (vite.config.ts → server.proxy).
 const BASE = "/api";
@@ -270,6 +276,47 @@ export const api = {
   runMatching(): Promise<{ data: { status: string } }> {
     return request<{ data: { status: string } }>("/matching/run", {
       method: "POST",
+    });
+  },
+
+  /** POST /api/matching/rematch-unmatched — UNMATCHED lotlarni qayta NEW qilib to'liq matchlaydi. */
+  rematchUnmatched(): Promise<{ data: { status: string; reset: number } }> {
+    return request<{ data: { status: string; reset: number } }>(
+      "/matching/rematch-unmatched",
+      { method: "POST" },
+    );
+  },
+
+  // ------------------------------------------------------------------ PC sborka
+  /** GET /api/pc-builds — sborka qilinadigan PC-lotlar ro'yxati + KPI. */
+  getPcBuilds(
+    params: { page?: number; limit?: number; onlyProfitable?: boolean } = {},
+  ): Promise<{
+    data: PcBuildSummary[];
+    kpis: PcBuildKpis;
+    rate: number;
+    meta: Paginated<unknown>["meta"];
+  }> {
+    return request(`/pc-builds${buildQuery({ ...params })}`);
+  },
+
+  /** GET /api/pc-builds/:lotId — bitta lot sborkasi (to'liq razbivka). */
+  getPcBuild(lotId: string): Promise<{ data: PcBuildDetail }> {
+    return request<{ data: PcBuildDetail }>(
+      `/pc-builds/${encodeURIComponent(lotId)}`,
+    );
+  },
+
+  /** GET /api/settings/usd-rate — joriy USD→UZS kurs + manbasi. */
+  getUsdRate(): Promise<{ data: UsdRate }> {
+    return request<{ data: UsdRate }>("/settings/usd-rate");
+  },
+
+  /** PATCH /api/settings/usd-rate — kursni qo'lda o'rnatadi (null = jonli kursga qaytish). */
+  setUsdRate(rate: number | null): Promise<{ data: UsdRate }> {
+    return request<{ data: UsdRate }>("/settings/usd-rate", {
+      method: "PATCH",
+      body: JSON.stringify({ rate }),
     });
   },
 

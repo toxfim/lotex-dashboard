@@ -18,11 +18,6 @@ const router = createRouter({
       component: () => import("@/views/AllLotsView.vue"),
     },
     {
-      path: "/stock",
-      name: "stock",
-      component: () => import("@/views/StockView.vue"),
-    },
-    {
       path: "/shop",
       name: "shop",
       component: () => import("@/views/ShopView.vue"),
@@ -43,6 +38,11 @@ const router = createRouter({
       path: "/supplies",
       name: "suppliers-all",
       component: () => import("@/views/SuppliersView.vue"),
+    },
+    {
+      path: "/pc-build",
+      name: "pc-build",
+      component: () => import("@/views/PcBuildView.vue"),
     },
     {
       path: "/analytics",

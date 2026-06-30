@@ -86,8 +86,8 @@ const mappingPreview = ref<WorkbookPreview | null>(null);
 const deleteTarget = ref<ApiSupplier | null>(null);
 const deleteBusy = ref(false);
 
-// --- "Hozir match qil" (umumiy composable) ---
-const { matchBusy, matchNote, runMatchNow } = useMatchRunner();
+// --- "Hozir match qil" / "Qayta match" (umumiy composable) ---
+const { matchBusy, matchNote, runMatchNow, rematchUnmatched } = useMatchRunner();
 
 // --- "Barcha tovarlar" jadvali (global supplies) ---
 const products = ref<ApiSupplierProductWithSupplier[]>([]);
@@ -469,12 +469,20 @@ onMounted(() => {
         <button
           class="btn btn-ghost"
           :disabled="matchBusy"
-          title="Tender lotlarini ta'minotchi tovarlariga qayta moslaydi"
+          title="Yangi (NEW) lotlarni ta'minotchi tovarlariga moslaydi"
           @click="runMatchNow"
         >
           <BaseIcon name="cpu" />{{
             matchBusy ? "Matching ketmoqda…" : "Hozir match qil"
           }}
+        </button>
+        <button
+          class="btn btn-ghost"
+          :disabled="matchBusy"
+          title="Mos topilmagan (UNMATCHED) lotlarni qayta moslaydi"
+          @click="rematchUnmatched"
+        >
+          <BaseIcon name="refresh" />Qayta match
         </button>
         <button class="btn btn-add" @click="openAdd">
           <BaseIcon name="plus" />Ta'minotchi qo'shish

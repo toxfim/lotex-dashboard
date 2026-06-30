@@ -48,15 +48,13 @@ export function useMatchRunner(onDone?: () => void) {
     }, 4000);
   }
 
-  async function runMatchNow() {
+  /** Triggerni chaqirib, holatni poll qiladi (ikkala tugma uchun umumiy). */
+  async function start(trigger: () => Promise<unknown>, startText: string) {
     if (matchBusy.value) return;
     matchBusy.value = true;
-    matchNote.value = {
-      kind: "ok",
-      text: "Matching ishga tushirildi… (lotlar ta'minotchi tovarlariga moslanmoqda)",
-    };
+    matchNote.value = { kind: "ok", text: startText };
     try {
-      await api.runMatching();
+      await trigger();
       poll();
     } catch (e) {
       const msg = e instanceof Error ? e.message : "";
@@ -71,7 +69,23 @@ export function useMatchRunner(onDone?: () => void) {
     }
   }
 
+  /** NEW lotlarni matchlaydi. */
+  function runMatchNow() {
+    return start(
+      () => api.runMatching(),
+      "Matching ishga tushirildi… (lotlar ta'minotchi tovarlariga moslanmoqda)",
+    );
+  }
+
+  /** Mos topilmagan (UNMATCHED) lotlarni qayta matchlaydi. */
+  function rematchUnmatched() {
+    return start(
+      () => api.rematchUnmatched(),
+      "Mos topilmagan lotlar qayta matchlanmoqda… (biroz vaqt olishi mumkin)",
+    );
+  }
+
   onUnmounted(clearTimer);
 
-  return { matchBusy, matchNote, runMatchNow };
+  return { matchBusy, matchNote, runMatchNow, rematchUnmatched };
 }

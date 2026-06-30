@@ -14,9 +14,9 @@ const { status } = usePipelineStatus();
 const NAV = [
   { id: "queue", path: "/queue", label: "Navbat", icon: "inbox" },
   { id: "lots", path: "/lots", label: "Barcha lotlar", icon: "layers" },
-  { id: "stock", path: "/stock", label: "Ombor", icon: "box" },
   { id: "shop", path: "/shop", label: "Electron Shop", icon: "store" },
   { id: "suppliers", path: "/suppliers", label: "Ta'minot", icon: "package" },
+  { id: "pc-build", path: "/pc-build", label: "Сборка ПК", icon: "cpu" },
   { id: "analytics", path: "/analytics", label: "Analitika", icon: "chart" },
 ];
 

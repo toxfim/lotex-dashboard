@@ -49,6 +49,8 @@ export const ICON_PATHS: Record<string, string> = {
   tag: '<path d="M3 7.5V12l8.5 8.5a1.5 1.5 0 0 0 2.1 0l4.9-4.9a1.5 1.5 0 0 0 0-2.1L10 5H4.5A1.5 1.5 0 0 0 3 6.5Z"/><circle cx="7.2" cy="9.2" r="1.1"/>',
   trash:
     '<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',
+  external:
+    '<path d="M14 4h6v6M20 4 10 14M19 13v6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/>',
 };
 
 export type IconName = keyof typeof ICON_PATHS;

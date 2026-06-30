@@ -209,7 +209,28 @@ onMounted(() => {
               >
                 <td>
                   <div class="c-title">{{ l.title }}</div>
-                  <div class="c-sub">{{ l.lotNo }}</div>
+                  <div class="c-sub">
+                    {{ l.lotNo }}
+                    <a
+                      v-if="l.buyerLotId"
+                      :href="`https://xarid.uzex.uz/shop/lot-details/${l.buyerLotId}`"
+                      target="_blank"
+                      rel="noopener"
+                      title="Uzex'da ochish"
+                      style="
+                        display: inline-flex;
+                        vertical-align: middle;
+                        margin-left: 5px;
+                        color: var(--accent-ink);
+                      "
+                      @click.stop
+                    >
+                      <BaseIcon
+                        name="external"
+                        :style="{ width: '13px', height: '13px' }"
+                      />
+                    </a>
+                  </div>
                 </td>
                 <td>
                   <div class="c-cust">{{ l.customer }}</div>

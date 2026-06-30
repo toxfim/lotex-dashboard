@@ -13,8 +13,8 @@ import type { Lot, LotStatus } from "@/types/lot";
 const queueStore = useQueueStore();
 const { pushToast } = useToast();
 // "Hozir match qil" — tugagach navbatni qayta yuklaymiz (yangi mosliklar chiqsin)
-const { matchBusy, matchNote, runMatchNow } = useMatchRunner(() =>
-  queueStore.fetchQueue().catch(() => {}),
+const { matchBusy, matchNote, runMatchNow, rematchUnmatched } = useMatchRunner(
+  () => queueStore.fetchQueue().catch(() => {}),
 );
 
 const tab = ref<LotStatus>("pending");
@@ -192,12 +192,20 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
       <button
         class="btn btn-ghost"
         :disabled="matchBusy"
-        title="Tender lotlarini ta'minotchi tovarlariga qayta moslaydi"
+        title="Yangi (NEW) lotlarni ta'minotchi tovarlariga moslaydi"
         @click="runMatchNow"
       >
         <BaseIcon name="cpu" />{{
           matchBusy ? "Matching ketmoqda…" : "Hozir match qil"
         }}
+      </button>
+      <button
+        class="btn btn-ghost"
+        :disabled="matchBusy"
+        title="Mos topilmagan (UNMATCHED) lotlarni qayta moslaydi"
+        @click="rematchUnmatched"
+      >
+        <BaseIcon name="refresh" />Qayta match
       </button>
       <button class="icon-btn">
         <BaseIcon name="bell" /><span class="badge-dot" />

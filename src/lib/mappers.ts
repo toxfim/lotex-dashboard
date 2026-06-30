@@ -138,6 +138,7 @@ export function mapApiLot(lot: ApiLot): Lot {
     id: lot.id,
     recommendationId: rec?.id,
     lotNo: lot.offerNo ?? `LOT-${lot.uzexLotId}`,
+    buyerLotId: lot.buyerLotId,
     category: lot.categoryName ?? "Boshqa",
     title: lot.title,
     customer: lot.customerName ?? lot.manufacturerName ?? "—",
