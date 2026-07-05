@@ -445,7 +445,13 @@ const uz: Record<string, string> = {
   // login
   "login.title": "Tizimga kirish",
   "login.brandSub": "Tender matching",
-  "login.hint": "Hisobingizga kirish uchun login va parolni kiriting",
+  "login.hint": "Hisobingiz bilan davom eting",
+  "login.hero.title": "UzEx tenderlarini avtomatik yutib olish tizimi",
+  "login.hero.desc":
+    "Pipeline lotlarni skanerlaydi va ombor bilan solishtiradi — operator har bir taklifni ko'rib chiqib tasdiqlaydi.",
+  "login.hero.winRate": "G'oliblik",
+  "login.hero.watching": "Kuzatuvda",
+  "login.hero.revenue": "Daromad",
   "login.usernameLabel": "Login",
   "login.passwordLabel": "Parol",
   "login.submit": "Kirish",
@@ -902,7 +908,13 @@ const ru: Record<string, string> = {
   // вход
   "login.title": "Вход в систему",
   "login.brandSub": "Подбор тендеров",
-  "login.hint": "Введите логин и пароль для входа в аккаунт",
+  "login.hint": "Продолжите с вашим аккаунтом",
+  "login.hero.title": "Система автоматического выигрыша тендеров UzEx",
+  "login.hero.desc":
+    "Пайплайн сканирует лоты и сопоставляет их со складом — оператор проверяет и подтверждает каждое предложение.",
+  "login.hero.winRate": "Победы",
+  "login.hero.watching": "В работе",
+  "login.hero.revenue": "Доход",
   "login.usernameLabel": "Логин",
   "login.passwordLabel": "Пароль",
   "login.submit": "Войти",
