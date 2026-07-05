@@ -70,7 +70,7 @@ const liveFunnel = computed<FunnelStage[]>(() => {
     {
       label: t("analytics.funnel.scanned"),
       value: f.scanned,
-      color: "oklch(0.72 0.04 256)",
+      color: "#b9bee8",
     },
     {
       label: t("analytics.funnel.matched"),
@@ -85,18 +85,18 @@ const liveFunnel = computed<FunnelStage[]>(() => {
     {
       label: t("analytics.funnel.won"),
       value: f.won,
-      color: "oklch(0.62 0.13 156)",
+      color: "#12a150",
     },
   ];
 });
 
 const CAT_COLORS = [
   "var(--accent)",
-  "oklch(0.6 0.13 200)",
-  "oklch(0.62 0.13 156)",
-  "oklch(0.7 0.13 72)",
-  "oklch(0.6 0.13 300)",
-  "oklch(0.62 0.12 30)",
+  "#2743e0",
+  "#12a150",
+  "#d98a06",
+  "#7c5cd6",
+  "#c05a3e",
 ];
 
 const counts = computed(() => ({

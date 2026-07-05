@@ -934,7 +934,7 @@ onMounted(() => {
 }
 .sr-title {
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .sr-sub {
   font-size: 12.5px;

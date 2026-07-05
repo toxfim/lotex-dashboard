@@ -1,0 +1,311 @@
+/* ============================================================
+   Electron Shop — add product (Page B)
+   ============================================================ */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 9px;
+  padding: 8px 14px 8px 11px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.back-btn:hover {
+  background: var(--surface-3);
+  border-color: var(--ink-4);
+}
+.back-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.topbar-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+.add-inner {
+  padding: 26px 32px 48px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.add-step {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 16px;
+}
+.step-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  background: var(--accent);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.step-head .step-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.step-head .step-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-top: 1px;
+}
+
+/* big cascading selects */
+.big-select-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.bs-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.big-select {
+  position: relative;
+  display: flex;
+}
+.big-select select {
+  appearance: none;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--ink);
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 12px;
+  padding: 14px 40px 14px 16px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+.big-select select:hover {
+  border-color: var(--ink-4);
+}
+.big-select select:focus {
+  outline: none;
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.big-select svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0.8);
+  width: 16px;
+  height: 16px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.big-select.disabled select {
+  background: var(--surface-2);
+  color: var(--ink-4);
+  cursor: not-allowed;
+  border-style: dashed;
+}
+.big-select.disabled svg {
+  opacity: 0.4;
+}
+
+/* field labels + badges */
+.fld-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+/* Uzun label (texnik parametrlar) qo'shni ustun ustiga chiqmasin — o'rab tushsin. */
+.fl-t {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* "majburiy" amber/warn'da — diqqat talab qiladi va ko'k accent CTA/qadamlar
+   bilan to'qnashmaydi; "ixtiyoriy" neytral qoladi. */
+.req,
+.opt {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1.5px 6px;
+  border-radius: 5px;
+}
+.req {
+  color: var(--warn-ink);
+  background: var(--warn-soft);
+  border: 1px solid var(--warn-line);
+}
+.opt {
+  color: var(--ink-4);
+  background: var(--surface-3);
+}
+
+/* form cards + groups */
+.form-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 18px;
+  margin-top: 16px;
+}
+.form-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 16px 18px 18px;
+  margin-top: 14px;
+}
+.form-group.muted {
+  background: var(--surface-2);
+  border-style: dashed;
+}
+.fg-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+.fg-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.fg-icon svg {
+  width: 15px;
+  height: 15px;
+}
+.form-group.muted .fg-icon {
+  background: var(--surface-3);
+  color: var(--ink-3);
+}
+.fg-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.fg-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+.fg-badge.req {
+  color: var(--warn-ink);
+  background: var(--warn-soft);
+  border: 1px solid var(--warn-line);
+}
+.fg-badge.opt {
+  color: var(--ink-4);
+  background: var(--surface-3);
+}
+.fg-badge.maj {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px 16px;
+}
+.fld {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+/* image upload + supplier */
+.img-supplier-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 18px;
+  align-items: stretch;
+}
+.img-upload {
+  border: 1.5px dashed var(--border-2);
+  border-radius: 12px;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  color: var(--ink-3);
+  font: inherit;
+  font-weight: 600;
+  font-size: 13.5px;
+  min-height: 150px;
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 0.12s,
+    background 0.12s,
+    color 0.12s;
+}
+.img-upload:hover {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.img-upload svg {
+  width: 26px;
+  height: 26px;
+  position: relative;
+}
+.img-upload small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-4);
+}
+.img-upload.filled {
+  border-style: solid;
+  color: var(--ink-3);
+}
+.img-upload.filled .iu-replace {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgb(23 23 27 / 0.66);
+  color: #fff;
+  font-size: 11.5px;
+  padding: 6px;
+  font-weight: 600;
+}
+.supplier-fields {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 14px;
+}

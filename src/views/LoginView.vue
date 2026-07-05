@@ -187,7 +187,7 @@ onUnmounted(stopPolling);
 }
 .lb-name {
   font-size: 17px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 .lb-sub {
@@ -196,7 +196,7 @@ onUnmounted(stopPolling);
 }
 .login-title {
   font-size: 21px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 .login-hint {

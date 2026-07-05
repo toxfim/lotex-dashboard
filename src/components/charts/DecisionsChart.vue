@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { DayDecision } from "@/types/stock";
 import { useI18n } from "@/composables/useI18n";
 
@@ -8,7 +9,11 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
-const max = Math.max(...props.data.map((d) => d.accepted + d.rejected));
+// data async keladi — mount paytida bo'sh bo'lsa ham reaktiv qayta hisoblansin
+// (aks holda max = -Infinity bo'lib, barlar 0 balandlikda qoladi).
+const max = computed(() =>
+  Math.max(1, ...props.data.map((d) => d.accepted + d.rejected)),
+);
 </script>
 
 <template>

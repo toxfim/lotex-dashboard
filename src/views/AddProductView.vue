@@ -1566,14 +1566,14 @@ async function submit() {
   background: var(--accent);
   color: #fff;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 .ep-h-title {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .ep-h-sub {
@@ -1656,7 +1656,7 @@ async function submit() {
   background: var(--accent-soft);
   color: var(--accent-ink);
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1711,7 +1711,7 @@ async function submit() {
   background: var(--accent);
   color: #fff;
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1721,7 +1721,7 @@ async function submit() {
 }
 .ep-title {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.3;
 }
 .ep-inn {
@@ -1823,7 +1823,7 @@ async function submit() {
 }
 .er-badge {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 2px 8px;
@@ -1846,7 +1846,7 @@ async function submit() {
 .er-balance b {
   display: block;
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .er-balance i {
@@ -1956,7 +1956,7 @@ async function submit() {
   left: 6px;
   bottom: 6px;
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 2px 6px;
@@ -1972,14 +1972,14 @@ async function submit() {
   height: 22px;
   border: none;
   border-radius: 6px;
-  background: oklch(0.25 0.02 262 / 0.55);
+  background: rgb(20 20 24 / 0.55);
   color: #fff;
   display: grid;
   place-items: center;
   cursor: pointer;
 }
 .img-del:hover {
-  background: oklch(0.25 0.02 262 / 0.8);
+  background: rgb(20 20 24 / 0.8);
 }
 .img-del :deep(svg) {
   width: 12px;
@@ -2037,6 +2037,6 @@ async function submit() {
 .big-select.picked input {
   border-color: var(--accent) !important;
   background: var(--accent-soft) !important;
-  font-weight: 650;
+  font-weight: 600;
 }
 </style>

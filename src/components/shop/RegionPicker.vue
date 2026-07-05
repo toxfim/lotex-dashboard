@@ -309,7 +309,7 @@ function toggleMaster() {
   flex: 1;
   min-width: 0;
   font-size: 13.5px;
-  font-weight: 650;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -396,7 +396,7 @@ function toggleMaster() {
 }
 .rp-selall {
   font-size: 12.5px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--accent-ink);
   cursor: pointer;
   user-select: none;
@@ -462,7 +462,7 @@ function toggleMaster() {
   padding: 6px 13px;
   font: inherit;
   font-size: 12.5px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink-3);
   cursor: pointer;
 }

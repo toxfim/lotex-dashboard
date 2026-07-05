@@ -1,0 +1,109 @@
+/* ============================================================
+   Toast
+   ============================================================ */
+.toasts {
+  position: fixed;
+  bottom: 22px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Har doim eng ustida — modal/scrim/lightbox'lar 80'da, toast ular ortida
+     qolmasligi kerak (masalan, rasm modalidagi limit/yuklash xatolari) */
+  z-index: 100;
+}
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 290px;
+  background: var(--ink);
+  color: #f4f4f5;
+  border-radius: 11px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast .t-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.toast .t-icon svg {
+  width: 15px;
+  height: 15px;
+}
+.toast.acc .t-icon {
+  background: var(--good);
+  color: #fff;
+}
+.toast.rej .t-icon {
+  background: var(--bad);
+  color: #fff;
+}
+.toast .t-body {
+  flex: 1;
+}
+.toast .t-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.toast .t-sub {
+  font-size: 11.5px;
+  color: #bdbdc4;
+  margin-top: 1px;
+}
+.toast .t-undo {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  background: none;
+  border: none;
+  color: #c3cbf2;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.toast .t-undo:hover {
+  color: #fff;
+}
+
+/* card removal animation */
+.lot-card.leaving {
+  animation: card-out 0.34s ease forwards;
+}
+@keyframes card-out {
+  to {
+    opacity: 0;
+    transform: translateX(28px);
+    margin-top: -10px;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* fade-in detail */
+.detail-inner {
+  animation: fade-up 0.34s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes fade-up {
+  from {
+    transform: translateY(9px);
+  }
+  to {
+    transform: none;
+  }
+}

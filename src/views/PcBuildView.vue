@@ -1016,7 +1016,7 @@ onBeforeUnmount(() => {
   gap: 6px;
   font: inherit;
   font-size: 12.5px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink-3);
   background: none;
   border: none;
@@ -1213,7 +1213,7 @@ onBeforeUnmount(() => {
 .sb-row-cost b {
   display: block;
   font-size: 14px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .sb-row-qty i,
@@ -1264,7 +1264,7 @@ onBeforeUnmount(() => {
 }
 .sb-pct {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: -0.01em;
   padding: 2px 9px;
   border-radius: 99px;
@@ -1276,7 +1276,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .sb-stat svg {
   width: 12px;
@@ -1326,7 +1326,7 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   z-index: 60;
-  background: oklch(0.2 0.02 262 / 0.42);
+  background: rgb(16 16 20 / 0.42);
   backdrop-filter: blur(2px);
   animation: sb-scrim-in 0.18s ease;
 }
@@ -1392,7 +1392,7 @@ onBeforeUnmount(() => {
 }
 .sb-ph-title {
   font-size: 16px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.01em;
   margin-top: 2px;
   overflow: hidden;
@@ -1516,7 +1516,7 @@ onBeforeUnmount(() => {
 }
 .sb-lot-title {
   font-size: 21px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
   margin: 9px 0 8px;
@@ -1537,14 +1537,14 @@ onBeforeUnmount(() => {
 }
 .sb-mm-l {
   font-size: 10.5px;
-  font-weight: 650;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--ink-4);
 }
 .sb-mm-v {
   font-size: 15.5px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .sb-mm-v i {
@@ -1634,7 +1634,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   color: var(--ink-4);
   margin-left: auto;
-  font-weight: 550;
+  font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -1678,7 +1678,7 @@ onBeforeUnmount(() => {
 }
 .sb-req-cat {
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--ink-4);
@@ -1688,7 +1688,7 @@ onBeforeUnmount(() => {
 }
 .sb-req-val {
   font-size: 13.5px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink);
   margin-top: 2px;
   text-wrap: pretty;
@@ -1852,7 +1852,7 @@ onBeforeUnmount(() => {
 }
 .sb-opt-name {
   font-size: 13.5px;
-  font-weight: 650;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1999,7 +1999,7 @@ onBeforeUnmount(() => {
 .sb-sl-cat {
   font-size: 12.5px;
   color: var(--ink-2);
-  font-weight: 550;
+  font-weight: 500;
   flex: 1;
   min-width: 0;
   white-space: nowrap;
@@ -2008,7 +2008,7 @@ onBeforeUnmount(() => {
 }
 .sb-sl-price {
   font-size: 12.5px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--ink);
   flex-shrink: 0;
 }
@@ -2030,7 +2030,7 @@ onBeforeUnmount(() => {
 }
 .sb-cost-row.total {
   font-size: 15.5px;
-  font-weight: 750;
+  font-weight: 700;
   color: var(--ink);
 }
 .sb-cost-row.total span:last-child {
@@ -2122,7 +2122,7 @@ onBeforeUnmount(() => {
 }
 .sb-viab-t {
   font-size: 13.5px;
-  font-weight: 750;
+  font-weight: 700;
 }
 .sb-viab.good .sb-viab-t {
   color: var(--good-ink);

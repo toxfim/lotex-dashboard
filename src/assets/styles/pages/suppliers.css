@@ -1,0 +1,293 @@
+/* ============================================================
+   Ta'minot — ta'minotchilar + Excel narx-ro'yxati ingest
+   (dizayn: copybek.html "Ta'minot — supply / intake")
+   ============================================================ */
+.modal.wide {
+  width: min(720px, 94%);
+}
+
+.count-pill {
+  display: inline-block;
+  min-width: 26px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  background: var(--surface-3);
+  border-radius: 7px;
+  padding: 2px 8px;
+}
+
+/* aloqa katakchasi (telefon / email) */
+.sup-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.sup-contact span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sup-contact svg {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-4);
+}
+
+/* excel import bar */
+.excel-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 13px 15px;
+  border: 1.5px dashed var(--border-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  transition:
+    border-color 0.12s,
+    background 0.12s;
+}
+.excel-bar.drag {
+  border-color: var(--good-line);
+  background: var(--good-soft);
+}
+.excel-bar-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 200px;
+}
+.excel-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  background: var(--good-soft);
+  color: var(--good-ink);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.excel-ic svg {
+  width: 20px;
+  height: 20px;
+}
+.excel-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.excel-sub {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  margin-top: 1px;
+}
+.excel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.excel-actions .btn {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+.excel-tmpl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 7px;
+  border-radius: 7px;
+  transition: background 0.12s;
+}
+.excel-tmpl:hover {
+  background: var(--accent-soft);
+}
+
+/* import natija eslatmasi */
+.import-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 10px 13px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.import-note svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.import-note.ok {
+  background: var(--good-soft);
+  color: var(--good-ink);
+  border: 1px solid var(--good-line);
+}
+.import-note.err {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+  border: 1px solid var(--warn-line);
+}
+.import-note .import-x {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  display: grid;
+  place-items: center;
+  padding: 2px;
+}
+.import-note .import-x:hover {
+  opacity: 1;
+}
+.import-note .import-x svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* mapping bloki (sheet konteyneri) */
+.sup-line {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 13px;
+}
+.sup-line + .sup-line {
+  margin-top: 12px;
+}
+.sup-line.is-skip {
+  opacity: 0.7;
+}
+
+/* toggle qatori (sheet / kategoriya / blok yoqish-o'chirish) */
+.sup-active-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  padding: 11px 13px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.sup-active-row.on {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+}
+.sup-active-row .sar-text {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.sup-active-row.on .sar-text {
+  color: var(--accent-ink);
+}
+.sup-active-row .sar-hint {
+  margin-left: auto;
+  font-size: 11.5px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+
+/* "yana yuklash" / qo'shish tugmasi */
+.sup-add-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1.5px dashed var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+}
+.sup-add-line:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  color: var(--accent-ink);
+}
+.sup-add-line:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* preview jadval (mapping tekshiruvi) */
+.preview-dt th,
+.preview-dt td {
+  font-size: 11.5px;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 6px 9px;
+}
+.preview-dt thead th {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-4);
+  background: var(--surface-2);
+}
+
+/* mapping blok ustun-tanlash gridi */
+.block-grid {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+.block-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+.block-head .excel-tmpl {
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.col-input {
+  text-transform: uppercase;
+}
+
+/* foot'dagi qizil-matnli ghost tugma */
+.btn-ghost.danger-text {
+  color: var(--bad-ink);
+}
+.btn-ghost.danger-text:hover {
+  background: var(--bad-soft);
+}

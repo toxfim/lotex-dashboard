@@ -431,7 +431,7 @@ onMounted(() => {
 }
 .od-title {
   font-size: 18px;
-  font-weight: 750;
+  font-weight: 700;
   letter-spacing: -0.01em;
 }
 .od-sub {
@@ -472,7 +472,7 @@ onMounted(() => {
   gap: 8px;
   flex-wrap: wrap;
   font-size: 13px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .rb-short {
   font-size: 11.5px;
@@ -514,7 +514,7 @@ onMounted(() => {
 }
 .od-val {
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
 }
 .od-section-title {
   font-size: 14px;

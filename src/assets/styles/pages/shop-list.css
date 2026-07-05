@@ -1,0 +1,203 @@
+/* ============================================================
+   Electron Shop — list (Page A)
+   ============================================================ */
+.status-pill.published {
+  background: var(--good-soft);
+  color: var(--good-ink);
+}
+.status-pill.published .sp-dot {
+  background: var(--good);
+}
+.status-pill.moderation {
+  background: var(--warn-soft);
+  color: var(--warn-ink);
+}
+.status-pill.moderation .sp-dot {
+  background: var(--warn);
+}
+
+.shop-dt tbody td {
+  padding: 12px 14px;
+}
+.shop-dt .c-title {
+  max-width: 320px;
+}
+
+.ent-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ent-chip {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  max-width: 168px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ent-chip.more {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border-color: var(--accent-line);
+  font-variant-numeric: tabular-nums;
+}
+
+/* product detail modal */
+.modal-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgb(23 23 27 / 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  animation: scrim-in 0.18s ease;
+}
+.modal {
+  width: min(560px, 92%);
+  height: 100%;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes modal-in {
+  from {
+    transform: translateX(60px);
+    opacity: 0.4;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.modal-top {
+  display: flex;
+  align-items: center;
+  padding: 16px 16px 14px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-top .mt-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.modal-x {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+}
+.modal-body {
+  padding: 22px 26px 28px;
+  overflow-y: auto;
+}
+.modal-hero {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.modal-img {
+  width: 168px;
+  height: 124px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: var(--ink-4);
+}
+.modal-img svg {
+  width: 30px;
+  height: 30px;
+  position: relative;
+  opacity: 0.5;
+}
+.modal-hero-meta {
+  flex: 1;
+  min-width: 0;
+  padding-top: 2px;
+}
+.modal-hero-meta .mh-title {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  text-wrap: pretty;
+}
+.modal-hero-meta .mh-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 8px;
+  font-weight: 600;
+}
+.modal-hero-meta .mh-brand svg {
+  width: 14px;
+  height: 14px;
+}
+.modal-hero-meta .mh-price {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 12px;
+}
+.modal-hero-meta .mh-price span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-4);
+}
+
+.ent-list-panel {
+  padding: 4px 0;
+}
+.ent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+}
+.ent-row + .ent-row {
+  border-top: 1px solid var(--border);
+}
+.ent-av {
+  width: 32px;
+  height: 32px;
+  border-radius: 99px;
+  flex-shrink: 0;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 13px;
+}
+.ent-row-main {
+  flex: 1;
+  min-width: 0;
+}
+.ent-row-main .ern-name {
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.ent-row-main .ern-sub {
+  font-size: 11.5px;
+  color: var(--ink-4);
+  margin-top: 1px;
+}

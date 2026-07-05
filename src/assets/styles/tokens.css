@@ -1,0 +1,52 @@
+/* Lotex v3 dizayn tokenlari — manba: claude.ai/design prototipi (Lotex.dc.html).
+   Rang/o'lcham literallari FAQAT shu faylda; qolgan joylar var() ishlatadi. */
+:root {
+  --bg: #f6f6f3;
+  --surface: #ffffff;
+  --surface-2: #fbfbf9;
+  --surface-3: #f1f1ec;
+  --border: #e6e6e1;
+  --border-2: #c9c9c1;
+
+  --ink: #17171b;
+  --ink-2: #56565e;
+  --ink-3: #8a8a92;
+  --ink-4: #a9a9b0;
+
+  --accent: #2743e0;
+  --accent-press: #1e35bd;
+  --accent-soft: #eceeff;
+  --accent-line: #b9bee8;
+  --accent-ink: #2136c5;
+
+  --good: #12a150;
+  --good-press: #0f8b45;
+  --good-soft: #e9f6ee;
+  --good-line: #bfe3cd;
+  --good-ink: #0e7a37;
+
+  --bad: #b5342a;
+  --bad-soft: #faeeec;
+  --bad-line: #e6c4bf;
+  --bad-ink: #a02f26;
+
+  --warn: #d98a06;
+  --warn-soft: #faf3e3;
+  --warn-line: #ecd9ab;
+  --warn-ink: #8f5f0a;
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --radius-xs: 6px;
+
+  --shadow-sm: 0 1px 2px rgb(23 23 27 / 0.04);
+  --shadow-md: 0 3px 10px rgb(23 23 27 / 0.06), 0 1px 3px rgb(23 23 27 / 0.04);
+  --shadow-lg:
+    0 18px 48px rgb(23 23 27 / 0.14), 0 4px 12px rgb(23 23 27 / 0.07);
+
+  --font: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --sidebar-w: 230px;
+  --list-w: 432px;
+}

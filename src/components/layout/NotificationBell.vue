@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
   background: var(--bad-ink, #d33);
   color: #fff;
   font-size: 9.5px;
-  font-weight: 800;
+  font-weight: 700;
   display: grid;
   place-items: center;
   line-height: 1;
@@ -159,7 +159,7 @@ onBeforeUnmount(() => {
   background: none;
   font: inherit;
   font-size: 11.5px;
-  font-weight: 650;
+  font-weight: 600;
   color: var(--accent-ink);
   cursor: pointer;
   padding: 0;

@@ -198,7 +198,7 @@ const lastSync = computed(() => {
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: oklch(0.28 0.02 262 / 0.42);
+  background: rgb(23 23 27 / 0.42);
   backdrop-filter: blur(2px);
   display: flex;
   align-items: center;

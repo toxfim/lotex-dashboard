@@ -260,7 +260,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: oklch(0.28 0.02 262 / 0.45);
+  background: rgb(23 23 27 / 0.45);
   backdrop-filter: blur(2px);
   display: grid;
   place-items: center;
@@ -300,7 +300,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 }
 .ipm-title {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
 }
 .ipm-sub {
   font-size: 12px;
@@ -465,7 +465,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
   right: 14px;
   z-index: 1;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 2px 7px;
@@ -475,7 +475,7 @@ onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 }
 .ipm-name {
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
