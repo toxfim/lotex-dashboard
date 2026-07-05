@@ -51,7 +51,9 @@ import type {
 } from "@/types/auth";
 
 // Backendga proxy qilinadigan prefiks (vite.config.ts → server.proxy).
-const BASE = "/api";
+// VITE_API_BASE bilan almashtirish mumkin — masalan static test-data rejimi:
+// VITE_API_BASE=/api/staticDatas (backend src/modules/static-datas).
+const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? "/api";
 
 export interface GetLotsParams {
   page?: number;
@@ -634,7 +636,7 @@ export const api = {
   ): Promise<{ data: { fileId: number | null } }> {
     const form = new FormData();
     form.append("file", file, file.name);
-    const res = await fetch("/api/shop-catalog/upload", {
+    const res = await fetch(`${BASE}/shop-catalog/upload`, {
       method: "POST",
       headers: { ...authHeaders() },
       body: form,
