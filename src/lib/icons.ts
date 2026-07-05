@@ -16,6 +16,7 @@ export const ICON_PATHS: Record<string, string> = {
   package:
     '<path d="m7.5 4.3 9 5.2M3 7l9 5 9-5-9-5-9 5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/>',
   chevronDown: '<path d="m6 9 6 6 6-6"/>',
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   minus: '<path d="M5 12h14"/>',

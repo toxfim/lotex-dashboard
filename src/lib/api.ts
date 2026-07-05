@@ -472,6 +472,28 @@ export const api = {
   },
 
   /**
+   * GET /api/suppliers/uploads/:uploadId/file — tovar yuklangan Excel faylning
+   * o'zini (blob) qaytaradi. :uploadId — UUID yoki qisqa kod (SS1234412).
+   * Auth headeri kerakligi uchun oddiy <a href> emas, fetch+blob ishlatiladi.
+   */
+  async downloadSupplierUploadFile(uploadId: string): Promise<Blob> {
+    let res: Response;
+    try {
+      res = await fetch(
+        `${BASE}/suppliers/uploads/${encodeURIComponent(uploadId)}/file`,
+        { headers: { ...authHeaders() } },
+      );
+    } catch (cause) {
+      throw new Error(`Lotex API so'rovi muvaffaqiyatsiz (upload file)`, {
+        cause,
+      });
+    }
+    if (res.status === 401) onUnauthorized();
+    if (!res.ok) throw new Error(`Lotex API ${res.status}: ${res.statusText}`);
+    return res.blob();
+  },
+
+  /**
    * POST /api/suppliers/uploads/:uploadId/confirm — tasdiqlangan/tuzatilgan
    * mapping bilan tovarlarni o'qib saqlaydi va shablonni saqlaydi.
    */

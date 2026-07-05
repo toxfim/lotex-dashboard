@@ -414,6 +414,28 @@ function loadMoreProducts() {
   loadProducts(false);
 }
 
+// --- tovar yuklangan Excel faylni yuklab olish (auth header bilan blob) ---
+const downloadingUploadId = ref<string | null>(null);
+
+async function downloadUploadFile(p: ApiSupplierProductWithSupplier) {
+  if (!p.upload || downloadingUploadId.value) return;
+  downloadingUploadId.value = p.upload.id;
+  try {
+    const blob = await api.downloadSupplierUploadFile(p.upload.id);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = p.upload.fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    productsError.value =
+      e instanceof Error ? e.message : t("suppliers.products.loadError");
+  } finally {
+    downloadingUploadId.value = null;
+  }
+}
+
 async function loadCategories() {
   try {
     const res = await api.getSupplierCategories(
@@ -745,6 +767,7 @@ onMounted(() => {
                   <th>Ta'minotchi</th>
                   <th>Model</th>
                   <th>Kategoriya</th>
+                  <th>Excel</th>
                   <th class="r">Tan narx</th>
                   <th class="r">Sotuv</th>
                 </tr>
@@ -765,6 +788,19 @@ onMounted(() => {
                     <span v-if="p.category" class="count-pill">{{
                       p.category
                     }}</span>
+                    <span v-else>—</span>
+                  </td>
+                  <td>
+                    <button
+                      v-if="p.upload"
+                      class="xls-chip"
+                      :disabled="downloadingUploadId === p.upload.id"
+                      :title="`${p.upload.fileName} — yuklab olish`"
+                      @click="downloadUploadFile(p)"
+                    >
+                      <BaseIcon name="download" />
+                      {{ p.upload.code ?? p.upload.id.slice(0, 8) }}
+                    </button>
                     <span v-else>—</span>
                   </td>
                   <td class="r num">{{ fmtPrice(p.costPrice, p.currency) }}</td>
@@ -1304,5 +1340,36 @@ onMounted(() => {
 .foot-count {
   font-size: 13px;
   color: var(--ink-4, #9aa1a9);
+}
+
+/* Tovar qaysi Excel'dan kelgani — kod chipi, bosilsa fayl yuklab olinadi */
+.xls-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+  border-radius: 7px;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s;
+}
+.xls-chip:hover {
+  border-color: var(--accent);
+}
+.xls-chip:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+.xls-chip :deep(svg) {
+  width: 13px;
+  height: 13px;
 }
 </style>

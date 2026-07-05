@@ -52,6 +52,9 @@ export interface ApiSupplierProduct {
   uploadId: string | null;
   normalizedName: string | null;
   createdAt: string;
+  /** Tovar qaysi Excel yuklamadan kelgani (qisqa kod + asl fayl nomi) —
+   *  dashboardda belgi va faylni yuklab olish uchun. Eski yozuvlarda null. */
+  upload: { id: string; code: string | null; fileName: string } | null;
 }
 
 /** GET /api/supplier-products elementi — barcha supplierlar bo'yicha, supplier nomi bilan. */
