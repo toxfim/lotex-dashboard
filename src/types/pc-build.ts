@@ -22,14 +22,21 @@ export interface PcAltPart {
   currency: string;
   costUzs: number;
   specNote: string;
+  /** Shu variantning lot talabiga moslik foizi (0–100). To'liq mos = 100. */
+  accuracyPct: number;
 }
 
 /** BOM dagi bitta komponent qatori. */
 export interface PcBomItem {
   componentType: PcComponentType;
-  requirement: string; // lot talabi
+  requirement: string; // lot talabi (to'liq matn — zaxira)
+  /** Toza talab token'lari (chip) — komponent nomi takrorlanmaydi: ["16 ГБ", "DDR4"]. */
+  reqSpecs: string[];
   needed: boolean;
   matched: boolean;
+  /** Aniqlik foizi (0–100): qondirilgan parametr / jami talab parametri. To'liq mos = 100;
+   *  to'liq mos topilmasa — eng yaqin nomzodning foizi (productName ham o'shaniki, matched=false). */
+  accuracyPct: number;
   productId: string | null;
   productName: string | null;
   supplierName: string | null;
@@ -51,6 +58,7 @@ export interface PcBuildResult {
   marginPct: number | null;
   coverage: { matched: number; needed: number };
   coreCovered: boolean;
+  accuracyPct: number | null;
 }
 
 /** GET /api/pc-builds ro'yxat elementi. */
@@ -61,6 +69,8 @@ export interface PcBuildSummary {
   customerName: string | null;
   categoryName: string | null;
   createdAt: string;
+  tenderEndDate: string;
+  status: "NEW" | "PROCESSING" | "UNMATCHED" | "EXPIRED";
   quantity: number;
   lotPriceUzs: number;
   unitCostUzs: number;
@@ -69,6 +79,7 @@ export interface PcBuildSummary {
   marginPct: number | null;
   coverage: { matched: number; needed: number };
   coreCovered: boolean;
+  accuracyPct: number | null;
 }
 
 export interface PcBuildKpis {

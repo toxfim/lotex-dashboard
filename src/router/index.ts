@@ -1,8 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: "/login",
+      name: "login",
+      meta: { public: true },
+      component: () => import("@/views/LoginView.vue"),
+    },
     {
       path: "/",
       redirect: "/queue",
@@ -54,7 +61,25 @@ const router = createRouter({
       name: "settings",
       component: () => import("@/views/SettingsView.vue"),
     },
+    {
+      path: "/accounts",
+      name: "accounts",
+      component: () => import("@/views/AccountsView.vue"),
+    },
   ],
+});
+
+// Account-based guard: token bo'lmasa /login; tokeni borlar /login ga kira olmaydi.
+router.beforeEach(async (to) => {
+  const auth = useAuthStore();
+  if (auth.token && !auth.user) await auth.fetchMe();
+
+  if (to.meta.public) {
+    if (auth.isAuthenticated) return { path: "/" };
+    return true;
+  }
+  if (!auth.isAuthenticated) return { path: "/login" };
+  return true;
 });
 
 export default router;

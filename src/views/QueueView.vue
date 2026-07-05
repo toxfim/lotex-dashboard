@@ -3,15 +3,19 @@ import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import { useQueueStore } from "@/stores/queue";
 import { useToast } from "@/composables/useToast";
 import { useMatchRunner } from "@/composables/useMatchRunner";
+import { useI18n } from "@/composables/useI18n";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import LotCard from "@/components/shared/LotCard.vue";
 import LotDetail from "@/components/shared/LotDetail.vue";
 import EmptyState from "@/components/shared/EmptyState.vue";
 import ServerDownState from "@/components/shared/ServerDownState.vue";
+import NotificationBell from "@/components/layout/NotificationBell.vue";
+import TopbarSettings from "@/components/layout/TopbarSettings.vue";
 import type { Lot, LotStatus } from "@/types/lot";
 
 const queueStore = useQueueStore();
 const { pushToast } = useToast();
+const { t } = useI18n();
 // "Hozir match qil" — tugagach navbatni qayta yuklaymiz (yangi mosliklar chiqsin)
 const { matchBusy, matchNote, runMatchNow, rematchUnmatched } = useMatchRunner(
   () => queueStore.fetchQueue().catch(() => {}),
@@ -30,18 +34,23 @@ async function retryLoad() {
   await queueStore.fetchQueue().catch(() => {});
 }
 
-const SORTS: Record<string, { label: string; fn: (a: Lot, b: Lot) => number }> =
-  {
-    match: {
-      label: "Moslik bo'yicha",
-      fn: (a, b) => b.match.overall - a.match.overall,
-    },
-    deadline: {
-      label: "Muddat bo'yicha",
-      fn: (a, b) => a.deadlineH - b.deadlineH,
-    },
-    value: { label: "Summa bo'yicha", fn: (a, b) => b.maxPrice - a.maxPrice },
-  };
+const SORTS: Record<
+  string,
+  { labelKey: string; fn: (a: Lot, b: Lot) => number }
+> = {
+  match: {
+    labelKey: "queue.sort.match",
+    fn: (a, b) => b.match.overall - a.match.overall,
+  },
+  deadline: {
+    labelKey: "queue.sort.deadline",
+    fn: (a, b) => a.deadlineH - b.deadlineH,
+  },
+  value: {
+    labelKey: "queue.sort.value",
+    fn: (a, b) => b.maxPrice - a.maxPrice,
+  },
+};
 const sortOrder: Array<"match" | "deadline" | "value"> = [
   "match",
   "deadline",
@@ -107,7 +116,9 @@ function decide(id: string, status: LotStatus) {
       pushToast({
         kind: status === "accepted" ? "acc" : "rej",
         title:
-          status === "accepted" ? "Tender qabul qilindi" : "Tender rad etildi",
+          status === "accepted"
+            ? t("queue.toast.accepted")
+            : t("queue.toast.rejected"),
         sub: lot.title.length > 40 ? lot.title.slice(0, 40) + "…" : lot.title,
         undoId: id,
         source: "queue",
@@ -116,8 +127,8 @@ function decide(id: string, status: LotStatus) {
     } catch {
       pushToast({
         kind: "rej",
-        title: "Qarorni saqlab bo'lmadi",
-        sub: "Server bilan bog'lanishda xatolik. Qayta urinib ko'ring.",
+        title: t("queue.toast.decisionError"),
+        sub: `${t("common.serverError")} ${t("common.tryAgain")}`,
         undoId: id,
         source: "queue",
       });
@@ -135,8 +146,8 @@ async function localUndo(id: string) {
   } catch {
     pushToast({
       kind: "rej",
-      title: "Bekor qilib bo'lmadi",
-      sub: "Server bilan bog'lanishda xatolik.",
+      title: t("queue.toast.undoError"),
+      sub: t("common.serverError"),
       undoId: id,
       source: "queue",
     });
@@ -153,24 +164,24 @@ function onKey(e: KeyboardEvent) {
 onMounted(() => window.addEventListener("keydown", onKey));
 onUnmounted(() => window.removeEventListener("keydown", onKey));
 
-const tabMeta: Array<{ id: LotStatus; label: string }> = [
-  { id: "pending", label: "Qaror kutilmoqda" },
-  { id: "accepted", label: "Qabul qilingan" },
-  { id: "rejected", label: "Rad etilgan" },
+const tabMeta: Array<{ id: LotStatus; labelKey: string }> = [
+  { id: "pending", labelKey: "queue.tab.pending" },
+  { id: "accepted", labelKey: "queue.tab.accepted" },
+  { id: "rejected", labelKey: "queue.tab.rejected" },
 ];
 
-const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
+const EMPTY_MAP: Record<LotStatus, { tKey: string; pKey: string }> = {
   pending: {
-    t: "Navbat bo'sh",
-    p: "Qaror kutayotgan lotlar yo'q. AI quvuri yangi mosliklarni topganda ular shu yerda paydo bo'ladi.",
+    tKey: "queue.empty.pending.title",
+    pKey: "queue.empty.pending.desc",
   },
   accepted: {
-    t: "Qabul qilingan lotlar yo'q",
-    p: "Siz qabul qilgan tenderlar shu bo'limda ko'rinadi.",
+    tKey: "queue.empty.accepted.title",
+    pKey: "queue.empty.accepted.desc",
   },
   rejected: {
-    t: "Rad etilgan lotlar yo'q",
-    p: "Rad etilgan tenderlar shu bo'limda ko'rinadi.",
+    tKey: "queue.empty.rejected.title",
+    pKey: "queue.empty.rejected.desc",
   },
 };
 </script>
@@ -178,39 +189,34 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
 <template>
   <header class="topbar">
     <div>
-      <h1>Navbat</h1>
-      <div class="crumb-sub">Kompaniyaga mos keluvchi tender lotlari</div>
+      <h1>{{ t("queue.title") }}</h1>
+      <div class="crumb-sub">{{ t("queue.subtitle") }}</div>
     </div>
     <div class="topbar-right">
       <div class="search">
         <BaseIcon name="search" />
-        <input
-          placeholder="Lot, buyurtmachi yoki ID bo'yicha qidirish"
-          v-model="query"
-        />
+        <input :placeholder="t('queue.search.placeholder')" v-model="query" />
       </div>
       <button
         class="btn btn-ghost"
         :disabled="matchBusy"
-        title="Yangi (NEW) lotlarni ta'minotchi tovarlariga moslaydi"
+        :title="t('queue.matchNow.title')"
         @click="runMatchNow"
       >
         <BaseIcon name="cpu" />{{
-          matchBusy ? "Matching ketmoqda…" : "Hozir match qil"
+          matchBusy ? t("queue.matching") : t("queue.matchNow")
         }}
       </button>
       <button
         class="btn btn-ghost"
         :disabled="matchBusy"
-        title="Mos topilmagan (UNMATCHED) lotlarni qayta moslaydi"
+        :title="t('queue.rematch.title')"
         @click="rematchUnmatched"
       >
-        <BaseIcon name="refresh" />Qayta match
+        <BaseIcon name="refresh" />{{ t("queue.rematch") }}
       </button>
-      <button class="icon-btn">
-        <BaseIcon name="bell" /><span class="badge-dot" />
-      </button>
-      <button class="icon-btn"><BaseIcon name="settings" /></button>
+      <NotificationBell />
+      <TopbarSettings />
     </div>
   </header>
 
@@ -232,34 +238,34 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
       <div class="list-head">
         <div class="seg">
           <button
-            v-for="t in tabMeta"
-            :key="t.id"
-            :class="{ on: tab === t.id }"
-            @click="tab = t.id"
+            v-for="tm in tabMeta"
+            :key="tm.id"
+            :class="{ on: tab === tm.id }"
+            @click="tab = tm.id"
           >
-            {{ t.label }}<span class="seg-n num">{{ counts[t.id] }}</span>
+            {{ t(tm.labelKey)
+            }}<span class="seg-n num">{{ counts[tm.id] }}</span>
           </button>
         </div>
       </div>
       <div class="list-meta">
         <span class="lm-count"
-          ><b class="num">{{ visible.length }}</b> ta lot{{
-            query ? " (filtr)" : ""
-          }}</span
+          ><b class="num">{{ visible.length }}</b> {{ t("common.lots")
+          }}{{ query ? ` ${t("common.filtered")}` : "" }}</span
         >
         <button
           class="sort-btn"
           @click="sort = sortOrder[(sortOrder.indexOf(sort) + 1) % 3]"
         >
-          <BaseIcon name="sort" />{{ SORTS[sort].label }}
+          <BaseIcon name="sort" />{{ t(SORTS[sort].labelKey) }}
         </button>
       </div>
       <div class="list-scroll scroll">
         <EmptyState
           v-if="queueStore.loading && queueStore.items.length === 0"
           icon="inbox"
-          title="Yuklanmoqda…"
-          description="Navbat serverdan olinmoqda."
+          :title="t('common.loading')"
+          :description="t('queue.loading.desc')"
         />
         <ServerDownState
           v-else-if="queueStore.error"
@@ -269,8 +275,8 @@ const EMPTY_MAP: Record<LotStatus, { t: string; p: string }> = {
         <EmptyState
           v-else-if="visible.length === 0"
           icon="inbox"
-          :title="EMPTY_MAP[tab].t"
-          :description="EMPTY_MAP[tab].p"
+          :title="t(EMPTY_MAP[tab].tKey)"
+          :description="t(EMPTY_MAP[tab].pKey)"
         />
         <LotCard
           v-for="lot in visible"

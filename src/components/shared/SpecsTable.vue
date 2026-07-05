@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type { LotSpec } from "@/types/lot";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
+import { useI18n } from "@/composables/useI18n";
 
 defineProps<{
   specs: LotSpec[];
 }>();
+
+const { t } = useI18n();
 
 const FLAG: Record<string, { cls: string; icon: string }> = {
   ok: { cls: "ok", icon: "check" },
@@ -18,10 +21,10 @@ const FLAG: Record<string, { cls: string; icon: string }> = {
     <table class="specs">
       <thead>
         <tr>
-          <th>Xususiyat</th>
-          <th>Lot talabi</th>
-          <th>Bizning zaxira</th>
-          <th style="text-align: center">Moslik</th>
+          <th>{{ t("specsTable.property") }}</th>
+          <th>{{ t("specsTable.required") }}</th>
+          <th>{{ t("specsTable.ours") }}</th>
+          <th style="text-align: center">{{ t("specsTable.match") }}</th>
         </tr>
       </thead>
       <tbody>

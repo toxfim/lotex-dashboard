@@ -5,12 +5,29 @@ import type {
   ApiRecommendationWithLot,
   Paginated,
 } from "@/types/api";
+import type { AppNotification } from "@/types/notification";
 import type {
   ApiCredential,
   CredentialCreate,
   CredentialUpdate,
 } from "@/types/credential";
-import type { ApiShopProduct, ShopProductDraft, ShopStatus } from "@/types/shop";
+import type {
+  ApiLegalEntity,
+  ApiShopProduct,
+  CredentialOffers,
+  OfferInput,
+  OfferStatusMenuItem,
+  ShopOfferDetailResponse,
+  ShopProductDraft,
+  ShopStatus,
+  UzexCatalogProduct,
+  UzexCategory,
+  UzexNamed,
+  UzexProductProp,
+  UzexRegion,
+  UzexUserFile,
+  UzexUserRecord,
+} from "@/types/shop";
 import type {
   ApiSupplier,
   ApiSupplierProduct,
@@ -27,6 +44,11 @@ import type {
   PcBuildSummary,
   UsdRate,
 } from "@/types/pc-build";
+import type {
+  AuthUser,
+  RegistrationStart,
+  RegistrationStatus,
+} from "@/types/auth";
 
 // Backendga proxy qilinadigan prefiks (vite.config.ts → server.proxy).
 const BASE = "/api";
@@ -96,6 +118,24 @@ function buildQuery(
   return qs ? `?${qs}` : "";
 }
 
+/** Saqlangan token bilan Authorization header (account-based auth). */
+function authHeaders(): Record<string, string> {
+  const t = localStorage.getItem("lotex_token");
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
+
+/** Joriy dashboard tili (useI18n LANG_KEY bilan bir xil kalit) —
+ *  uzex ma'lumotnoma so'rovlarida ?lang= sifatida yuboriladi. */
+function currentLang(): "uz" | "ru" {
+  return localStorage.getItem("lotex_lang") === "ru" ? "ru" : "uz";
+}
+
+/** 401 — token yaroqsiz/yo'q: tozalaymiz va login sahifasiga yo'naltiramiz. */
+function onUnauthorized(): void {
+  localStorage.removeItem("lotex_token");
+  if (!location.pathname.startsWith("/login")) location.href = "/login";
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
@@ -104,6 +144,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: {
         Accept: "application/json",
         ...(init?.body ? { "Content-Type": "application/json" } : {}),
+        ...authHeaders(),
         ...init?.headers,
       },
     });
@@ -111,6 +152,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     // Tarmoq/proxy xatosi — fail loud (CLAUDE.md §1).
     throw new Error(`Lotex API so'rovi muvaffaqiyatsiz (${path})`, { cause });
   }
+
+  if (res.status === 401 && path !== "/auth/login") onUnauthorized();
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
@@ -130,12 +173,14 @@ async function upload<T>(path: string, body: FormData): Promise<T> {
   try {
     res = await fetch(`${BASE}${path}`, {
       method: "POST",
-      headers: { Accept: "application/json" },
+      headers: { Accept: "application/json", ...authHeaders() },
       body,
     });
   } catch (cause) {
     throw new Error(`Lotex API yuklash muvaffaqiyatsiz (${path})`, { cause });
   }
+
+  if (res.status === 401) onUnauthorized();
 
   if (!res.ok) {
     const errBody = await res.json().catch(() => null);
@@ -150,6 +195,43 @@ async function upload<T>(path: string, body: FormData): Promise<T> {
 }
 
 export const api = {
+  // ------------------------------------------------------------------ auth
+  /** POST /api/auth/login — { token, user }. */
+  login(
+    username: string,
+    password: string,
+  ): Promise<{ data: { token: string; user: AuthUser } }> {
+    return request("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password }),
+    });
+  },
+  /** GET /api/auth/me — joriy foydalanuvchi. */
+  getMe(): Promise<{ data: AuthUser }> {
+    return request("/auth/me");
+  },
+  /** PATCH /api/auth/me/language — interfeys tilini saqlaydi (DB). */
+  setMyLanguage(language: string): Promise<{ data: AuthUser }> {
+    return request("/auth/me/language", {
+      method: "PATCH",
+      body: JSON.stringify({ language }),
+    });
+  },
+  /** GET /api/auth/users — barcha account'lar (faqat ko'rish — rollar yo'q). */
+  getUsers(): Promise<{ data: AuthUser[] }> {
+    return request("/auth/users");
+  },
+  /** POST /api/auth/register/start — Telegram orqali ro'yxatdan o'tishni boshlaydi. */
+  registerStart(): Promise<{ data: RegistrationStart }> {
+    return request("/auth/register/start", { method: "POST" });
+  },
+  /** GET /api/auth/register/status/:token — registratsiya holati. */
+  getRegisterStatus(
+    token: string,
+  ): Promise<{ data: { status: RegistrationStatus } }> {
+    return request(`/auth/register/status/${token}`);
+  },
+
   /** GET /api/lots — paginatsiyalangan lotlar ro'yxati. */
   getLots(params: GetLotsParams = {}): Promise<Paginated<ApiLot>> {
     return request<Paginated<ApiLot>>(`/lots${buildQuery({ ...params })}`);
@@ -158,6 +240,15 @@ export const api = {
   /** GET /api/lots/:id — bitta lot (id UUID yoki uzexLotId). */
   getLot(id: string): Promise<{ data: ApiLot }> {
     return request<{ data: ApiLot }>(`/lots/${encodeURIComponent(id)}`);
+  },
+
+  /**
+   * UzEx mahsulot rasmi URLi (backend `/lots/:id/image` proxy orqali) — `<img :src>` uchun.
+   * `size: "average"` — kichik thumbnail (~8KB), default — to'liq o'lcham.
+   */
+  lotImageUrl(id: string, size: "full" | "average" = "full"): string {
+    const qs = size === "average" ? "?size=average" : "";
+    return `${BASE}/lots/${encodeURIComponent(id)}/image${qs}`;
   },
 
   /** GET /api/recommendations — paginatsiyalangan matching natijalari (lot bilan). */
@@ -427,7 +518,12 @@ export const api = {
   /** PATCH /api/shop-products/:id — tahrirlash / status. */
   updateShopProduct(
     id: string,
-    body: Partial<Pick<ApiShopProduct, "name" | "brand" | "price" | "entities" | "status" | "specs">>,
+    body: Partial<
+      Pick<
+        ApiShopProduct,
+        "name" | "brand" | "price" | "entities" | "status" | "specs"
+      >
+    >,
   ): Promise<{ data: ApiShopProduct }> {
     const mapped = {
       ...body,
@@ -445,5 +541,181 @@ export const api = {
       `/shop-products/${encodeURIComponent(id)}`,
       { method: "DELETE" },
     );
+  },
+
+  // ---------------------------------------------- legal entities + uzex katalog
+  /** GET /api/legal-entities — yuridik shaxslar (forma + attribution uchun). */
+  getLegalEntities(): Promise<{ data: ApiLegalEntity[] }> {
+    return request<{ data: ApiLegalEntity[] }>("/legal-entities");
+  },
+
+  /** GET /api/shop-catalog/categories — uzex kategoriyalari. */
+  getShopCategories(): Promise<{ data: UzexCategory[]; error?: string }> {
+    return request<{ data: UzexCategory[]; error?: string }>(
+      `/shop-catalog/categories${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+
+  /** GET /api/shop-catalog/products — kategoriya ichida tovar qidirish. */
+  getShopCatalogProducts(
+    categoryId: number,
+    q?: string,
+  ): Promise<{ data: UzexCatalogProduct[]; error?: string }> {
+    return request<{ data: UzexCatalogProduct[]; error?: string }>(
+      `/shop-catalog/products${buildQuery({ categoryId, q, lang: currentLang() })}`,
+    );
+  },
+
+  /** GET /api/shop-catalog/product-props/:code — dinamik texnik maydonlar. */
+  getShopProductProps(
+    productCode: string,
+  ): Promise<{ data: UzexProductProp[]; error?: string }> {
+    return request<{ data: UzexProductProp[]; error?: string }>(
+      `/shop-catalog/product-props/${encodeURIComponent(productCode)}${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+
+  /** GET /api/shop-catalog/marks/:code */
+  getShopMarks(code: string): Promise<{ data: UzexNamed[]; error?: string }> {
+    return request(
+      `/shop-catalog/marks/${encodeURIComponent(code)}${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+  /** GET /api/shop-catalog/manufacturers/:code */
+  getShopManufacturers(
+    code: string,
+  ): Promise<{ data: UzexNamed[]; error?: string }> {
+    return request(
+      `/shop-catalog/manufacturers/${encodeURIComponent(code)}${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+  /** GET /api/shop-catalog/regions — viloyat+tuman. */
+  getShopRegions(): Promise<{ data: UzexRegion[]; error?: string }> {
+    return request(
+      `/shop-catalog/regions${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+  /** GET /api/shop-catalog/countries */
+  getShopCountries(): Promise<{ data: UzexNamed[]; error?: string }> {
+    return request(
+      `/shop-catalog/countries${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+  /** GET /api/shop-catalog/periods — Kun/Oy/Yil. */
+  getShopPeriods(): Promise<{ data: UzexNamed[]; error?: string }> {
+    return request(
+      `/shop-catalog/periods${buildQuery({ lang: currentLang() })}`,
+    );
+  },
+  /** GET /api/shop-catalog/user-records — moliyaviy hisoblar. */
+  getShopUserRecords(
+    entityId?: string,
+  ): Promise<{ data: UzexUserRecord[]; error?: string }> {
+    return request(`/shop-catalog/user-records${buildQuery({ entityId })}`);
+  },
+
+  /** GET /api/shop-catalog/files — uzex'ga oldin yuklangan rasmlar (fayl-menejer). */
+  getShopFiles(params: {
+    q?: string;
+    from?: number;
+    to?: number;
+  }): Promise<{ data: UzexUserFile[]; error?: string }> {
+    return request(`/shop-catalog/files${buildQuery(params)}`);
+  },
+
+  /** Yuklangan rasm preview URLi (backend proxy) — `<img :src>` uchun. */
+  shopFileImageUrl(f: Pick<UzexUserFile, "path" | "name">): string {
+    return `${BASE}/shop-catalog/file/image?path=${encodeURIComponent(f.path)}&name=${encodeURIComponent(f.name)}`;
+  },
+
+  /** POST /api/shop-catalog/upload — rasm yuklash; javob { fileId }. */
+  async uploadShopImage(
+    file: File,
+  ): Promise<{ data: { fileId: number | null } }> {
+    const form = new FormData();
+    form.append("file", file, file.name);
+    const res = await fetch("/api/shop-catalog/upload", {
+      method: "POST",
+      headers: { ...authHeaders() },
+      body: form,
+    });
+    if (res.status === 401) onUnauthorized();
+    if (!res.ok) throw new Error(`Upload HTTP ${res.status}`);
+    return res.json();
+  },
+
+  /** POST /api/shop-products/publish — bir nechta entityda offer e'lon qilish. */
+  publishOffer(payload: {
+    entities: string[];
+    offer: OfferInput;
+    name: string;
+    brand: string;
+    specs: [string, string][];
+    /** Har entity uchun tanlangan moliyaviy hisob: { [entityId]: record_id } */
+    records?: Record<string, number>;
+  }): Promise<{
+    data: {
+      product: ApiShopProduct | null;
+      results: {
+        entityId: string;
+        name: string;
+        ok: boolean;
+        error?: string;
+      }[];
+      published: number;
+      total: number;
+    };
+  }> {
+    return request("/shop-products/publish", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  /** GET /api/shop-offers?statusId= — har entity bo'yicha uzex offerlari. */
+  getShopOffers(
+    statusId?: number,
+  ): Promise<{ data: CredentialOffers[]; meta?: unknown }> {
+    return request(`/shop-offers${buildQuery({ statusId })}`);
+  },
+
+  /** GET /api/shop-offers/status-menu?entityId= — status menyusi (soni bilan). */
+  getShopOffersStatusMenu(
+    entityId?: string,
+  ): Promise<{ data: OfferStatusMenuItem[]; error?: string }> {
+    return request(`/shop-offers/status-menu${buildQuery({ entityId })}`);
+  },
+
+  /** GET /api/shop-offers/detail — bitta offer to'liq ma'lumoti + rad sababi (AI/moderator). */
+  getShopOfferDetail(
+    entityId: string,
+    offerId: number,
+  ): Promise<{ data: ShopOfferDetailResponse }> {
+    return request(`/shop-offers/detail${buildQuery({ entityId, offerId })}`);
+  },
+
+  /** GET /api/analytics — dashboard agregat statistikasi (jonli). */
+  getAnalytics(): Promise<{ data: unknown }> {
+    return request("/analytics");
+  },
+
+  /** GET /api/notifications — oxirgi bildirishnomalar + o'qilmaganlar soni. */
+  getNotifications(): Promise<{
+    data: AppNotification[];
+    unreadCount: number;
+  }> {
+    return request("/notifications");
+  },
+
+  /** POST /api/notifications/:id/read — bittasini o'qilgan deb belgilash. */
+  markNotificationRead(id: string): Promise<{ data: AppNotification }> {
+    return request(`/notifications/${encodeURIComponent(id)}/read`, {
+      method: "POST",
+    });
+  },
+
+  /** POST /api/notifications/read-all — hammasini o'qilgan deb belgilash. */
+  markAllNotificationsRead(): Promise<{ data: { count: number } }> {
+    return request("/notifications/read-all", { method: "POST" });
   },
 };

@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
-import {
-  LEGAL_ENTITIES,
-  STATUS_SHOP,
-  entityNames,
-  shopCatName,
-  shopSub,
-} from "@/data/shop";
+import { useShopStore } from "@/stores/shop";
+import { STATUS_SHOP } from "@/data/shop";
 import { fmtSom } from "@/lib/formatters";
 import type { ApiShopProduct } from "@/types/shop";
 
@@ -19,12 +14,16 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-const sub = computed(() => shopSub(props.product.cat, props.product.sub));
-const st = computed(() => STATUS_SHOP[props.product.status]);
-const names = computed(() => entityNames(props.product.entities));
+const shopStore = useShopStore();
 
-function entityByName(name: string) {
-  return LEGAL_ENTITIES.find((x) => x.name === name);
+const catName = computed(() => shopStore.catLabel(props.product.cat));
+const st = computed(() => STATUS_SHOP[props.product.status]);
+const names = computed(() => shopStore.entityNames(props.product.entities));
+
+function entitySub(name: string): string {
+  const e = shopStore.legalEntities.find((x) => x.name === name);
+  if (!e) return "";
+  return [e.inn ? `INN ${e.inn}` : null, e.region].filter(Boolean).join(" · ");
 }
 </script>
 
@@ -32,9 +31,7 @@ function entityByName(name: string) {
   <div class="modal-scrim" @click="emit('close')">
     <div class="modal" @click.stop>
       <div class="modal-top">
-        <div class="mt-eyebrow">
-          {{ shopCatName(product.cat) }} · {{ sub?.name }}
-        </div>
+        <div class="mt-eyebrow">{{ catName }} · {{ product.sub }}</div>
         <button class="icon-btn modal-x" @click="emit('close')">
           <BaseIcon name="x" />
         </button>
@@ -98,9 +95,7 @@ function entityByName(name: string) {
               <div class="ent-av">{{ n.slice(0, 1) }}</div>
               <div class="ent-row-main">
                 <div class="ern-name">{{ n }}</div>
-                <div class="ern-sub">
-                  INN {{ entityByName(n)?.inn }} · {{ entityByName(n)?.region }}
-                </div>
+                <div class="ern-sub">{{ entitySub(n) }}</div>
               </div>
               <span class="chip good"><BaseIcon name="check" /> Faol</span>
             </div>

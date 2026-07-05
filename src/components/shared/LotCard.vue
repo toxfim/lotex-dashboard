@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { ref } from "vue";
 import type { Lot } from "@/types/lot";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import MatchRing from "@/components/shared/MatchRing.vue";
+import { api } from "@/lib/api";
 import { compactSom, deadline } from "@/lib/formatters";
+import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
   lot: Lot;
@@ -10,14 +13,20 @@ const props = defineProps<{
   leaving?: boolean;
 }>();
 
+// Rasmsiz lotlarda backend 404 qaytaradi — thumbnailni yashiramiz.
+// Kartochka `:key="lot.id"` bilan render bo'lgani uchun lot almashganda tiklanadi.
+const isImageVisible = ref(true);
+
 defineEmits<{
   click: [];
 }>();
 
-const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
-  good: { cls: "good", label: "Foydali", icon: "trendUp" },
-  edge: { cls: "edge", label: "Chegarada", icon: "alert" },
-  bad: { cls: "bad", label: "Foydasiz", icon: "x" },
+const { t } = useI18n();
+
+const VIAB: Record<string, { cls: string; labelKey: string; icon: string }> = {
+  good: { cls: "good", labelKey: "lotCard.viab.good", icon: "trendUp" },
+  edge: { cls: "edge", labelKey: "lotCard.viab.edge", icon: "alert" },
+  bad: { cls: "bad", labelKey: "lotCard.viab.bad", icon: "x" },
 };
 </script>
 
@@ -27,7 +36,15 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
     @click="$emit('click')"
   >
     <div class="lc-top">
-      <div style="min-width: 0">
+      <div v-if="isImageVisible" class="lc-thumb">
+        <img
+          :src="api.lotImageUrl(lot.id, 'average')"
+          alt=""
+          loading="lazy"
+          @error="isImageVisible = false"
+        />
+      </div>
+      <div style="min-width: 0; flex: 1">
         <div class="lc-cat">{{ lot.category }}</div>
         <div class="lc-title">{{ lot.title }}</div>
       </div>
@@ -39,11 +56,12 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
     </div>
     <div class="lc-foot">
       <span class="chip"
-        ><BaseIcon name="coins" />{{ compactSom(lot.maxPrice) }} so'm</span
+        ><BaseIcon name="coins" />{{ compactSom(lot.maxPrice) }}
+        {{ t("currency.som") }}</span
       >
       <span :class="['chip', VIAB[lot.pricing.verdict].cls]">
         <BaseIcon :name="VIAB[lot.pricing.verdict].icon" />{{
-          VIAB[lot.pricing.verdict].label
+          t(VIAB[lot.pricing.verdict].labelKey)
         }}
       </span>
       <span
@@ -54,7 +72,7 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
         <BaseIcon name="clock" />{{ deadline(lot.deadlineH).text }}
       </span>
       <span v-else class="chip" style="margin-left: auto">
-        <BaseIcon name="clock" />Yopilgan
+        <BaseIcon name="clock" />{{ t("time.closed") }}
       </span>
     </div>
   </div>

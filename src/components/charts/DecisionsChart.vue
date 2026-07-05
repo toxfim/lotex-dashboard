@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import type { DayDecision } from "@/types/stock";
+import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
   data: DayDecision[];
 }>();
+
+const { t } = useI18n();
 
 const max = Math.max(...props.data.map((d) => d.accepted + d.rejected));
 </script>
@@ -36,11 +39,14 @@ const max = Math.max(...props.data.map((d) => d.accepted + d.rejected));
     </div>
     <div class="chart-legend" style="margin-top: 14px">
       <span class="lg-item"
-        ><span class="lg-dot" style="background: var(--good)" />Qabul
-        qilingan</span
+        ><span class="lg-dot" style="background: var(--good)" />{{
+          t("queue.tab.accepted")
+        }}</span
       >
       <span class="lg-item"
-        ><span class="lg-dot" style="background: var(--bad)" />Rad etilgan</span
+        ><span class="lg-dot" style="background: var(--bad)" />{{
+          t("queue.tab.rejected")
+        }}</span
       >
     </div>
   </div>

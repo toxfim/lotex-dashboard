@@ -60,11 +60,17 @@ export function useMatchRunner(onDone?: () => void) {
       const msg = e instanceof Error ? e.message : "";
       if (msg.includes("409")) {
         // allaqachon ishlamoqda — baribir tugashini kuzatamiz
-        matchNote.value = { kind: "ok", text: "Matching allaqachon ishlamoqda…" };
+        matchNote.value = {
+          kind: "ok",
+          text: "Matching allaqachon ishlamoqda…",
+        };
         poll();
       } else {
         matchBusy.value = false;
-        matchNote.value = { kind: "err", text: msg || "Ishga tushirib bo'lmadi" };
+        matchNote.value = {
+          kind: "err",
+          text: msg || "Ishga tushirib bo'lmadi",
+        };
       }
     }
   }

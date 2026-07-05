@@ -2,14 +2,18 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { useLotStore } from "@/stores/lots";
 import { useToast } from "@/composables/useToast";
+import { useI18n } from "@/composables/useI18n";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import BaseSelect from "@/components/shared/BaseSelect.vue";
 import LotDetail from "@/components/shared/LotDetail.vue";
+import NotificationBell from "@/components/layout/NotificationBell.vue";
+import TopbarSettings from "@/components/layout/TopbarSettings.vue";
 import { compactSom, deadline } from "@/lib/formatters";
 import type { Lot, LotStatus } from "@/types/lot";
 
 const lotStore = useLotStore();
 const { pushToast } = useToast();
+const { t } = useI18n();
 
 const status = ref("all");
 const cat = ref("all");
@@ -21,10 +25,10 @@ const openId = ref<string | null>(null);
 const PAGE_SIZE = 12;
 const page = ref(1);
 
-const STATUS_META: Record<LotStatus, { label: string; cls: string }> = {
-  pending: { label: "Kutilmoqda", cls: "pending" },
-  accepted: { label: "Qabul qilingan", cls: "accepted" },
-  rejected: { label: "Rad etilgan", cls: "rejected" },
+const STATUS_META: Record<LotStatus, { labelKey: string; cls: string }> = {
+  pending: { labelKey: "status.pending", cls: "pending" },
+  accepted: { labelKey: "queue.tab.accepted", cls: "accepted" },
+  rejected: { labelKey: "queue.tab.rejected", cls: "rejected" },
 };
 
 const cats = computed(() => [
@@ -105,7 +109,8 @@ function decide(id: string, st: LotStatus) {
   lotStore.decide(id, st);
   pushToast({
     kind: st === "accepted" ? "acc" : "rej",
-    title: st === "accepted" ? "Tender qabul qilindi" : "Tender rad etildi",
+    title:
+      st === "accepted" ? t("queue.toast.accepted") : t("queue.toast.rejected"),
     sub: lot.title.length > 40 ? lot.title.slice(0, 40) + "…" : lot.title,
     undoId: id,
   });
@@ -125,20 +130,16 @@ onMounted(() => {
   <div class="page">
     <header class="topbar">
       <div>
-        <h1>Barcha lotlar</h1>
-        <div class="crumb-sub">Tizimga tushgan barcha tenderlar arxivi</div>
+        <h1>{{ t("lots.title") }}</h1>
+        <div class="crumb-sub">{{ t("lots.subtitle") }}</div>
       </div>
       <div class="topbar-right">
         <div class="search">
           <BaseIcon name="search" />
-          <input
-            placeholder="Lot, buyurtmachi yoki ID qidirish"
-            v-model="query"
-          />
+          <input :placeholder="t('lots.search.placeholder')" v-model="query" />
         </div>
-        <button class="icon-btn">
-          <BaseIcon name="bell" /><span class="badge-dot" />
-        </button>
+        <NotificationBell />
+        <TopbarSettings />
       </div>
     </header>
 
@@ -148,10 +149,10 @@ onMounted(() => {
           <BaseSelect
             v-model="status"
             :options="[
-              { v: 'all', l: 'Barcha holatlar' },
-              { v: 'pending', l: 'Qaror kutilmoqda' },
-              { v: 'accepted', l: 'Qabul qilingan' },
-              { v: 'rejected', l: 'Rad etilgan' },
+              { v: 'all', l: t('lots.filter.allStatuses') },
+              { v: 'pending', l: t('queue.tab.pending') },
+              { v: 'accepted', l: t('queue.tab.accepted') },
+              { v: 'rejected', l: t('queue.tab.rejected') },
             ]"
           />
           <BaseSelect
@@ -159,13 +160,13 @@ onMounted(() => {
             :options="
               cats.map((c) => ({
                 v: c,
-                l: c === 'all' ? 'Barcha kategoriyalar' : c,
+                l: c === 'all' ? t('lots.filter.allCategories') : c,
               }))
             "
           />
           <div class="filter-spacer" />
           <span class="result-count"
-            ><b class="num">{{ rows.length }}</b> ta lot</span
+            ><b class="num">{{ rows.length }}</b> {{ t("common.lots") }}</span
           >
         </div>
 
@@ -175,29 +176,31 @@ onMounted(() => {
               <tr>
                 <th class="sortable" @click="toggleSort('title')">
                   <span class="th-in"
-                    >Lot<BaseIcon v-if="sortKey === 'title'" name="sort"
+                    >{{ t("lots.col.lot")
+                    }}<BaseIcon v-if="sortKey === 'title'" name="sort"
                   /></span>
                 </th>
-                <th>Buyurtmachi</th>
-                <th>Kategoriya</th>
+                <th>{{ t("lots.col.customer") }}</th>
+                <th>{{ t("lots.col.category") }}</th>
                 <th class="sortable" @click="toggleSort('match')">
                   <span class="th-in"
-                    >Moslik<BaseIcon v-if="sortKey === 'match'" name="sort"
+                    >{{ t("lots.col.match")
+                    }}<BaseIcon v-if="sortKey === 'match'" name="sort"
                   /></span>
                 </th>
                 <th class="sortable r" @click="toggleSort('value')">
                   <span class="th-in"
-                    >Maksimal narx<BaseIcon
-                      v-if="sortKey === 'value'"
-                      name="sort"
+                    >{{ t("common.maxPrice")
+                    }}<BaseIcon v-if="sortKey === 'value'" name="sort"
                   /></span>
                 </th>
                 <th class="sortable" @click="toggleSort('deadline')">
                   <span class="th-in"
-                    >Muddat<BaseIcon v-if="sortKey === 'deadline'" name="sort"
+                    >{{ t("lots.col.deadline")
+                    }}<BaseIcon v-if="sortKey === 'deadline'" name="sort"
                   /></span>
                 </th>
-                <th>Holat</th>
+                <th>{{ t("lotDetail.status") }}</th>
               </tr>
             </thead>
             <tbody>
@@ -216,7 +219,7 @@ onMounted(() => {
                       :href="`https://xarid.uzex.uz/shop/lot-details/${l.buyerLotId}`"
                       target="_blank"
                       rel="noopener"
-                      title="Uzex'da ochish"
+                      :title="t('common.openInUzex')"
                       style="
                         display: inline-flex;
                         vertical-align: middle;
@@ -261,7 +264,7 @@ onMounted(() => {
                   <span
                     v-if="deadline(l.deadlineH).closed"
                     style="color: var(--ink-4); font-size: 12.5px"
-                    >Yopilgan</span
+                    >{{ t("time.closed") }}</span
                   >
                   <span
                     v-else
@@ -277,7 +280,9 @@ onMounted(() => {
                 </td>
                 <td>
                   <span :class="['status-pill', STATUS_META[l.status].cls]">
-                    <span class="sp-dot" />{{ STATUS_META[l.status].label }}
+                    <span class="sp-dot" />{{
+                      t(STATUS_META[l.status].labelKey)
+                    }}
                   </span>
                 </td>
               </tr>
@@ -286,29 +291,29 @@ onMounted(() => {
           <div v-if="lotStore.loading && rows.length === 0" class="page-empty">
             <div class="empty-mark"><BaseIcon name="search" /></div>
             <div>
-              <h3>Yuklanmoqda…</h3>
-              <p>Lotlar serverdan olinmoqda.</p>
+              <h3>{{ t("common.loading") }}</h3>
+              <p>{{ t("lots.loadingDesc") }}</p>
             </div>
           </div>
           <div v-else-if="lotStore.error" class="page-empty">
             <div class="empty-mark"><BaseIcon name="x" /></div>
             <div>
-              <h3>Lotlarni yuklab bo'lmadi</h3>
+              <h3>{{ t("lots.loadError") }}</h3>
               <p>{{ lotStore.error }}</p>
               <button
                 class="icon-btn"
                 style="margin-top: 10px; width: auto; padding: 0 14px"
                 @click="lotStore.fetchLots()"
               >
-                Qayta urinish
+                {{ t("common.retry") }}
               </button>
             </div>
           </div>
           <div v-else-if="rows.length === 0" class="page-empty">
             <div class="empty-mark"><BaseIcon name="search" /></div>
             <div>
-              <h3>Lot topilmadi</h3>
-              <p>Filtr yoki qidiruv shartlarini o'zgartiring.</p>
+              <h3>{{ t("lots.notFound.title") }}</h3>
+              <p>{{ t("lots.notFound.desc") }}</p>
             </div>
           </div>
         </div>
@@ -323,7 +328,7 @@ onMounted(() => {
             <button
               class="pager-btn"
               :disabled="page <= 1"
-              aria-label="Oldingi sahifa"
+              :aria-label="t('common.prevPage')"
               @click="goToPage(page - 1)"
             >
               <BaseIcon name="arrowRight" class="flip" />
@@ -334,7 +339,7 @@ onMounted(() => {
             <button
               class="pager-btn"
               :disabled="page >= totalPages"
-              aria-label="Keyingi sahifa"
+              :aria-label="t('common.nextPage')"
               @click="goToPage(page + 1)"
             >
               <BaseIcon name="arrowRight" />
@@ -349,7 +354,7 @@ onMounted(() => {
       <div class="drawer-scrim" @click="openId = null" />
       <div class="drawer">
         <div class="drawer-top">
-          <span class="dtt-label">Lot tafsiloti</span>
+          <span class="dtt-label">{{ t("lots.drawer.title") }}</span>
           <span class="dtt-sub">{{ openLot.lotNo }}</span>
           <button
             class="icon-btn"

@@ -16,8 +16,9 @@ export interface ApiMatchedStock {
   sku?: string | null;
   actualCost?: number | null;
   recommendedPrice?: number | null;
-  // supplier-based matching: mos topilgan ta'minotchi nomi (mavjud bo'lsa)
+  // supplier-based matching: mos topilgan ta'minotchi (mavjud bo'lsa)
   supplierName?: string | null;
+  supplierId?: string | null;
 }
 
 /** Lot.requirements (js_properties) elementi — texnik talab. */
@@ -36,11 +37,17 @@ export interface ApiRecommendation {
   lotId: string;
   matchedStockName: string;
   matchedSku: string | null;
+  // mos topilgan ta'minotchi top-level (badge/link uchun). Eski yozuvlarda null bo'lishi
+  // mumkin — bunda matchedStock.supplierName/supplierId fallback ishlatiladi.
+  supplierId: string | null;
+  supplierName: string | null;
   matchedStock: ApiMatchedStock | null;
   costPrice: number;
   recommendedPrice: number;
   tenderFee: number | null;
   confidence: number;
+  /** 1-bosqich vektorli (cosine) o'xshashligi 0..1. Eski yozuvlarda null. */
+  vectorScore: number | null;
   aiNotes: string | null;
   recommendedStatus: ApiRecommendationStatus;
   managerDecision: ApiManagerDecision;

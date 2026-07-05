@@ -1,16 +1,25 @@
 <script setup lang="ts">
+import { ref } from "vue";
+
 import type { Lot } from "@/types/lot";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
+import SupplierModal from "@/components/shared/SupplierModal.vue";
+import { useI18n } from "@/composables/useI18n";
 import { fmtNum } from "@/lib/formatters";
 
 const props = defineProps<{
   lot: Lot;
 }>();
 
-const LLM_MAP: Record<string, { label: string; cls: string; icon: string }> = {
-  verified: { label: "Tasdiqlandi", cls: "good", icon: "check" },
-  partial: { label: "Qisman mos", cls: "warn", icon: "alert" },
-  rejected: { label: "Rad etildi", cls: "bad", icon: "x" },
+const { t } = useI18n();
+
+/** Bosilgan ta'minotchi id si — markazda modal ochish uchun (null bo'lsa yopiq). */
+const openSupplierId = ref<string | null>(null);
+
+const LLM_MAP: Record<string, { labelKey: string; cls: string; icon: string }> = {
+  verified: { labelKey: "pipeline.llm.verified", cls: "good", icon: "check" },
+  partial: { labelKey: "pipeline.llm.partial", cls: "warn", icon: "alert" },
+  rejected: { labelKey: "pipeline.llm.rejected", cls: "bad", icon: "x" },
 };
 </script>
 
@@ -18,23 +27,24 @@ const LLM_MAP: Record<string, { label: string; cls: string; icon: string }> = {
   <div class="panel">
     <div class="pipe">
       <div class="pipe-stage">
-        <div class="ps-num">1-BOSQICH</div>
+        <div class="ps-num">{{ t("pipeline.stage1.num") }}</div>
         <div class="ps-name">
           <BaseIcon
             name="vector"
             :style="{ width: '15px', height: '15px', color: 'var(--accent)' }"
           />
-          Vektor o'xshashligi
+          {{ t("pipeline.stage1.name") }}
         </div>
         <div class="ps-desc">
-          Lot tavsifi embedding bo'yicha ombor pozitsiyalari bilan taqqoslandi.
+          {{ t("pipeline.stage1.desc") }}
         </div>
         <div class="pipe-score">
           <span class="psv" style="color: var(--accent-ink)">{{
             lot.match.vector.toFixed(2)
           }}</span>
           <span class="psu"
-            >kosinus · {{ Math.round(lot.match.vector * 100) }}%</span
+            >{{ t("pipeline.stage1.unit") }} ·
+            {{ Math.round(lot.match.vector * 100) }}%</span
           >
         </div>
         <div class="meter">
@@ -47,17 +57,16 @@ const LLM_MAP: Record<string, { label: string; cls: string; icon: string }> = {
         </div>
       </div>
       <div class="pipe-stage">
-        <div class="ps-num">2-BOSQICH</div>
+        <div class="ps-num">{{ t("pipeline.stage2.num") }}</div>
         <div class="ps-name">
           <BaseIcon
             name="cpu"
             :style="{ width: '15px', height: '15px', color: 'var(--accent)' }"
           />
-          LLM tasdiqlash
+          {{ t("pipeline.stage2.name") }}
         </div>
         <div class="ps-desc">
-          Eng yaqin nomzodlar texnik shartlar bo'yicha til modeli orqali
-          tekshirildi.
+          {{ t("pipeline.stage2.desc") }}
         </div>
         <div style="margin-top: 11px">
           <span
@@ -69,7 +78,7 @@ const LLM_MAP: Record<string, { label: string; cls: string; icon: string }> = {
             }"
           >
             <BaseIcon :name="LLM_MAP[lot.match.llm].icon" />
-            {{ LLM_MAP[lot.match.llm].label }}
+            {{ t(LLM_MAP[lot.match.llm].labelKey) }}
           </span>
         </div>
         <div class="meter" style="margin-top: 16px">
@@ -88,27 +97,46 @@ const LLM_MAP: Record<string, { label: string; cls: string; icon: string }> = {
       <div class="stock-info">
         <div class="si-name">{{ lot.match.stock.name }}</div>
         <div class="si-code">{{ lot.match.stock.code }}</div>
+        <!-- ta'minotchi badge (supplier-based matching) — supplierId bo'lsa
+             bosilganda markazda ma'lumot modali ochiladi, bo'lmasa oddiy badge -->
+        <component
+          :is="lot.match.stock.supplierId ? 'button' : 'span'"
+          v-if="lot.match.stock.supplier"
+          type="button"
+          class="supplier-badge"
+          :class="{ 'is-link': lot.match.stock.supplierId }"
+          @click.stop="
+            lot.match.stock.supplierId &&
+              (openSupplierId = lot.match.stock.supplierId)
+          "
+        >
+          <BaseIcon name="store" />
+          <span class="sb-label">{{ t("pipeline.supplierLabel") }}</span>
+          <span class="sb-name">{{ lot.match.stock.supplier }}</span>
+        </component>
       </div>
-      <div class="stock-avail">
-        <template v-if="lot.match.stock.supplier">
-          <div class="sa-v" style="font-size: 13px">
-            {{ lot.match.stock.supplier }}
-          </div>
-          <div class="sa-l">ta'minotchi</div>
-        </template>
-        <template v-else>
-          <div class="sa-v num">{{ fmtNum(lot.match.stock.avail) }}</div>
-          <div class="sa-l">{{ lot.match.stock.unit }} zaxirada</div>
-        </template>
+      <!-- ta'minotchi yo'q (klassik stok matching) — zaxira miqdori o'ngda -->
+      <div v-if="!lot.match.stock.supplier" class="stock-avail">
+        <div class="sa-v num">{{ fmtNum(lot.match.stock.avail) }}</div>
+        <div class="sa-l">
+          {{ lot.match.stock.unit }} {{ t("pipeline.inStock") }}
+        </div>
       </div>
     </div>
 
     <div class="reason">
       <div class="r-mark"><BaseIcon name="sparkle" /></div>
       <div class="r-body">
-        <div class="r-head">Sun'iy intellekt xulosasi</div>
+        <div class="r-head">{{ t("pipeline.aiConclusion") }}</div>
         <div class="r-text">{{ lot.match.reasoning }}</div>
       </div>
     </div>
+
+    <SupplierModal
+      v-if="openSupplierId"
+      :supplier-id="openSupplierId"
+      :fallback-name="lot.match.stock.supplier"
+      @close="openSupplierId = null"
+    />
   </div>
 </template>

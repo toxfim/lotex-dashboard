@@ -1,5 +1,7 @@
 /** Lotning xarid.uzex.uz dagi sahifasiga havola (buyerLotId = uzex lot_id). */
-export function uzexLotUrl(buyerLotId: number | null | undefined): string | null {
+export function uzexLotUrl(
+  buyerLotId: number | null | undefined,
+): string | null {
   return buyerLotId != null
     ? `https://xarid.uzex.uz/shop/lot-details/${buyerLotId}`
     : null;

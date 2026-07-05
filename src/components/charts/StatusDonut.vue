@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
   counts: { pending: number; accepted: number; rejected: number };
 }>();
+
+const { t } = useI18n();
 
 const total = computed(
   () =>
@@ -19,11 +22,19 @@ const gradient = computed(
 const segs = computed(() => [
   {
     color: "var(--good)",
-    label: "Qabul qilingan",
+    label: t("queue.tab.accepted"),
     count: props.counts.accepted,
   },
-  { color: "var(--bad)", label: "Rad etilgan", count: props.counts.rejected },
-  { color: "var(--warn)", label: "Kutilmoqda", count: props.counts.pending },
+  {
+    color: "var(--bad)",
+    label: t("queue.tab.rejected"),
+    count: props.counts.rejected,
+  },
+  {
+    color: "var(--warn)",
+    label: t("status.pending"),
+    count: props.counts.pending,
+  },
 ]);
 </script>
 
@@ -32,7 +43,7 @@ const segs = computed(() => [
     <div class="donut" :style="{ background: gradient }">
       <div class="donut-center">
         <div class="dc-v num">{{ total }}</div>
-        <div class="dc-l">jami lot</div>
+        <div class="dc-l">{{ t("analytics.totalLots") }}</div>
       </div>
     </div>
     <div class="donut-legend">

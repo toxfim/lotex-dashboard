@@ -1,4 +1,10 @@
 import { hoursUntil, relativeAgo } from "@/lib/formatters";
+import {
+  overallMatchPct,
+  specsMatchPct,
+  vectorPct,
+  type SpecMatchState,
+} from "@/lib/match-score";
 import type {
   ApiLot,
   ApiLotRequirement,
@@ -75,7 +81,9 @@ function buildStock(rec: ApiRecommendation, unit: string): MatchStock {
     avail: 0,
     unit,
     cost: rec.costPrice ?? snapshot.actualCost ?? 0,
-    supplier: snapshot.supplierName ?? null,
+    // top-level supplier* yangi yozuvlarda keladi; eski yozuvlar uchun snapshot fallback.
+    supplier: rec.supplierName ?? snapshot.supplierName ?? null,
+    supplierId: rec.supplierId ?? snapshot.supplierId ?? null,
   };
 }
 
@@ -98,9 +106,13 @@ function buildMatch(lot: ApiLot): LotMatch {
       specs,
     };
   }
+  // Moslik tahlili: vektor (cosine) 40% + texnik xususiyatlar 60%, null-xavfsiz.
+  const sPct = specsMatchPct(specs.map((s) => s.m as SpecMatchState));
+  const vPct = vectorPct(rec.vectorScore);
   return {
-    overall: Math.round(rec.confidence),
-    vector: Number((rec.confidence / 100).toFixed(2)),
+    overall: overallMatchPct(vPct, sPct),
+    // ko'rsatish uchun cosine (0..1). Eski yozuvlarda saqlanmagan — confidence'ga qaytamiz.
+    vector: Number((rec.vectorScore ?? rec.confidence / 100).toFixed(2)),
     llm: REC_STATUS_TO_LLM[rec.recommendedStatus],
     reasoning: rec.aiNotes ?? "",
     stock: buildStock(rec, lot.unit ?? "dona"),

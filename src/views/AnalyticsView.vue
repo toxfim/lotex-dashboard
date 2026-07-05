@@ -1,16 +1,94 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useLotStore } from "@/stores/lots";
+import { useI18n } from "@/composables/useI18n";
+import { api } from "@/lib/api";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
+import NotificationBell from "@/components/layout/NotificationBell.vue";
+import TopbarSettings from "@/components/layout/TopbarSettings.vue";
 import DecisionsChart from "@/components/charts/DecisionsChart.vue";
 import StatusDonut from "@/components/charts/StatusDonut.vue";
 import HBars from "@/components/charts/HBars.vue";
 import FunnelChart from "@/components/charts/FunnelChart.vue";
-import { DECISIONS_7D, FUNNEL, ANALYTICS } from "@/data/stock";
+import type { DayDecision, FunnelStage } from "@/types/stock";
 import { fmtNum, compactSom, computePricing } from "@/lib/formatters";
 
 const lotStore = useLotStore();
+const { t } = useI18n();
 const period = ref("30");
+
+// Jonli analitika (backend agregat /api/analytics).
+interface AnalyticsStats {
+  lots: { total: number; byResult: Record<string, number> };
+  recommendations: {
+    total: number;
+    byDecision: Record<string, number>;
+    avgConfidence: number;
+  };
+  funnel: { scanned: number; matched: number; accepted: number; won: number };
+  decisions7d: {
+    day: string;
+    accepted: number;
+    rejected: number;
+    pending: number;
+  }[];
+  shop: { products: number };
+}
+const stats = ref<AnalyticsStats | null>(null);
+
+onMounted(async () => {
+  try {
+    const res = await api.getAnalytics();
+    stats.value = res.data as AnalyticsStats;
+  } catch {
+    /* yuklanmasa — lotStore'dan qisman ko'rsatamiz */
+  }
+});
+
+const WEEKDAY = computed(() => [
+  t("time.weekday.sun"),
+  t("time.weekday.mon"),
+  t("time.weekday.tue"),
+  t("time.weekday.wed"),
+  t("time.weekday.thu"),
+  t("time.weekday.fri"),
+  t("time.weekday.sat"),
+]);
+const liveDecisions = computed<DayDecision[]>(
+  () =>
+    stats.value?.decisions7d.map((d) => ({
+      day: WEEKDAY.value[new Date(d.day).getDay()] ?? d.day.slice(5),
+      accepted: d.accepted,
+      rejected: d.rejected,
+    })) ?? [],
+);
+
+const liveFunnel = computed<FunnelStage[]>(() => {
+  const f = stats.value?.funnel;
+  if (!f) return [];
+  return [
+    {
+      label: t("analytics.funnel.scanned"),
+      value: f.scanned,
+      color: "oklch(0.72 0.04 256)",
+    },
+    {
+      label: t("analytics.funnel.matched"),
+      value: f.matched,
+      color: "var(--accent)",
+    },
+    {
+      label: t("analytics.funnel.accepted"),
+      value: f.accepted,
+      color: "var(--good)",
+    },
+    {
+      label: t("analytics.funnel.won"),
+      value: f.won,
+      color: "oklch(0.62 0.13 156)",
+    },
+  ];
+});
 
 const CAT_COLORS = [
   "var(--accent)",
@@ -46,44 +124,51 @@ const recent = computed(() =>
   lotStore.lots.filter((l) => l.status !== "pending"),
 );
 
+const acceptRate = computed(() => {
+  const d = stats.value?.recommendations.byDecision;
+  if (!d) return 0;
+  const reviewed = (d.ACCEPTED ?? 0) + (d.REJECTED ?? 0);
+  return reviewed ? Math.round(((d.ACCEPTED ?? 0) / reviewed) * 100) : 0;
+});
+
 const kpis = computed(() => [
   {
-    label: "Skanerlangan lotlar",
-    val: fmtNum(ANALYTICS.scannedWeek),
-    sub: "shu hafta",
-    delta: ANALYTICS.scannedDelta,
+    label: t("analytics.funnel.scanned"),
+    val: fmtNum(stats.value?.funnel.scanned ?? lotStore.lots.length),
+    sub: t("analytics.kpi.scanned.sub"),
+    delta: null as number | null,
     icon: "vector",
     tint: "accent" as const,
   },
   {
-    label: "Mos kelgan lotlar",
-    val: fmtNum(ANALYTICS.matchedWeek),
-    sub: "AI tomonidan",
-    delta: ANALYTICS.matchedDelta,
+    label: t("analytics.kpi.matched.label"),
+    val: fmtNum(stats.value?.funnel.matched ?? 0),
+    sub: t("analytics.kpi.matched.sub"),
+    delta: null as number | null,
     icon: "sparkle",
     tint: "accent" as const,
   },
   {
-    label: "Qabul darajasi",
-    val: ANALYTICS.acceptRate + "%",
-    sub: "ko'rib chiqilganlardan",
-    delta: ANALYTICS.acceptDelta,
+    label: t("analytics.kpi.acceptRate.label"),
+    val: acceptRate.value + "%",
+    sub: t("analytics.kpi.acceptRate.sub"),
+    delta: null as number | null,
     icon: "check",
     tint: "good" as const,
   },
   {
-    label: "Yutilgan qiymat",
-    val: compactSom(wonValue.value) + " so'm",
-    sub: "qabul qilingan takliflar",
+    label: t("analytics.kpi.wonValue.label"),
+    val: compactSom(wonValue.value) + " " + t("currency.som"),
+    sub: t("analytics.kpi.wonValue.sub"),
     delta: null as number | null,
     icon: "coins",
     tint: "good" as const,
   },
   {
-    label: "O'rtacha marja",
-    val: ANALYTICS.avgMargin + "%",
-    sub: "sof foyda",
-    delta: ANALYTICS.marginDelta,
+    label: t("analytics.kpi.avgConfidence.label"),
+    val: Math.round(stats.value?.recommendations.avgConfidence ?? 0) + "%",
+    sub: t("analytics.kpi.avgConfidence.sub"),
+    delta: null as number | null,
     icon: "scale",
     tint: "warn" as const,
   },
@@ -100,16 +185,16 @@ const tint: Record<string, [string, string]> = {
   <div class="page">
     <header class="topbar">
       <div>
-        <h1>Analitika</h1>
-        <div class="crumb-sub">Tender quvuri va qaror ko'rsatkichlari</div>
+        <h1>{{ t("analytics.title") }}</h1>
+        <div class="crumb-sub">{{ t("analytics.subtitle") }}</div>
       </div>
       <div class="topbar-right">
         <div class="seg" style="width: 210px">
           <button
             v-for="[v, l] in [
-              ['7', '7 kun'],
-              ['30', '30 kun'],
-              ['365', 'Yil'],
+              ['7', t('analytics.period.7d')],
+              ['30', t('analytics.period.30d')],
+              ['365', t('analytics.period.year')],
             ]"
             :key="v"
             :class="{ on: period === v }"
@@ -118,9 +203,8 @@ const tint: Record<string, [string, string]> = {
             {{ l }}
           </button>
         </div>
-        <button class="icon-btn">
-          <BaseIcon name="bell" /><span class="badge-dot" />
-        </button>
+        <NotificationBell />
+        <TopbarSettings />
       </div>
     </header>
 
@@ -159,17 +243,23 @@ const tint: Record<string, [string, string]> = {
           <div class="card">
             <div class="card-head">
               <div>
-                <div class="card-title">Qarorlar hajmi</div>
-                <div class="card-sub">Oxirgi 7 kun · menejer triaji</div>
+                <div class="card-title">
+                  {{ t("analytics.decisionsVolume.title") }}
+                </div>
+                <div class="card-sub">
+                  {{ t("analytics.decisionsVolume.sub") }}
+                </div>
               </div>
             </div>
-            <DecisionsChart :data="DECISIONS_7D" />
+            <DecisionsChart :data="liveDecisions" />
           </div>
           <div class="card">
             <div class="card-head">
               <div>
-                <div class="card-title">Holatlar taqsimoti</div>
-                <div class="card-sub">Joriy lotlar bo'yicha</div>
+                <div class="card-title">
+                  {{ t("analytics.statusDist.title") }}
+                </div>
+                <div class="card-sub">{{ t("analytics.statusDist.sub") }}</div>
               </div>
             </div>
             <StatusDonut :counts="counts" />
@@ -180,8 +270,10 @@ const tint: Record<string, [string, string]> = {
           <div class="card">
             <div class="card-head">
               <div>
-                <div class="card-title">Kategoriya bo'yicha qiymat</div>
-                <div class="card-sub">Lotlarning umumiy maksimal narxi</div>
+                <div class="card-title">
+                  {{ t("analytics.catValue.title") }}
+                </div>
+                <div class="card-sub">{{ t("analytics.catValue.sub") }}</div>
               </div>
             </div>
             <HBars :data="valueByCat" />
@@ -189,20 +281,24 @@ const tint: Record<string, [string, string]> = {
           <div class="card">
             <div class="card-head">
               <div>
-                <div class="card-title">AI moslik quvuri</div>
-                <div class="card-sub">Skanerdan qabulgacha · shu hafta</div>
+                <div class="card-title">
+                  {{ t("analytics.aiPipeline.title") }}
+                </div>
+                <div class="card-sub">{{ t("analytics.aiPipeline.sub") }}</div>
               </div>
             </div>
-            <FunnelChart :data="FUNNEL" />
+            <FunnelChart :data="liveFunnel" />
           </div>
         </div>
 
         <div class="card" style="margin-top: 14px">
           <div class="card-head">
             <div>
-              <div class="card-title">So'nggi qarorlar</div>
+              <div class="card-title">
+                {{ t("analytics.recentDecisions.title") }}
+              </div>
               <div class="card-sub">
-                Menejerlar tomonidan ko'rib chiqilgan lotlar
+                {{ t("analytics.recentDecisions.sub") }}
               </div>
             </div>
           </div>
@@ -230,7 +326,9 @@ const tint: Record<string, [string, string]> = {
               >
                 {{
                   l.status === "accepted"
-                    ? compactSom(computePricing(l.pricing).bidTotal) + " so'm"
+                    ? compactSom(computePricing(l.pricing).bidTotal) +
+                      " " +
+                      t("currency.som")
                     : "—"
                 }}
               </div>
@@ -239,7 +337,7 @@ const tint: Record<string, [string, string]> = {
               v-if="recent.length === 0"
               style="padding: 20px 0; color: var(--ink-4); font-size: 13px"
             >
-              Hali qaror qabul qilinmagan.
+              {{ t("analytics.noDecisionsYet") }}
             </div>
           </div>
         </div>

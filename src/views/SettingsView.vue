@@ -1,13 +1,33 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
 import { useCredentialStore } from "@/stores/credentials";
+import { useAuthStore } from "@/stores/auth";
+import { useI18n } from "@/composables/useI18n";
+import { LOCALES } from "@/i18n";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import BaseSelect from "@/components/shared/BaseSelect.vue";
 import EmptyState from "@/components/shared/EmptyState.vue";
+import TopbarSettings from "@/components/layout/TopbarSettings.vue";
 import { relativeAgo } from "@/lib/formatters";
 import type { ApiCredential, CredentialUpdate } from "@/types/credential";
 
 const store = useCredentialStore();
+const auth = useAuthStore();
+const { t, locale, setLocale } = useI18n();
+
+const langSaving = ref(false);
+
+/** Tilni almashtiradi: darhol UI + DB'da per-account saqlanadi. */
+async function changeLanguage(l: string) {
+  if (l === locale.value || langSaving.value) return;
+  setLocale(l);
+  langSaving.value = true;
+  try {
+    await auth.setLanguage(l);
+  } finally {
+    langSaving.value = false;
+  }
+}
 
 // tashkilot shakllari va hududlar (qo'lda forma uchun)
 const ORG_FORM_OPTS = ["YaTT", "MChJ", "AJ", "XK", "QK"].map((v) => ({
@@ -269,18 +289,54 @@ onMounted(() => {
   <div class="page">
     <header class="topbar">
       <div>
-        <h1>Sozlamalar</h1>
-        <div class="crumb-sub">Integratsiyalar va magazin credentiallari</div>
+        <h1>{{ t("settings.title") }}</h1>
+        <div class="crumb-sub">{{ t("settings.subtitle") }}</div>
       </div>
       <div class="topbar-right">
         <button class="btn btn-add" @click="openAdd">
           <BaseIcon name="plus" />Legal entity qo'shish
         </button>
+        <TopbarSettings />
       </div>
     </header>
 
     <div class="page-scroll scroll">
       <div class="page-inner fade-page">
+        <!-- account + interfeys tili -->
+        <div class="set-card">
+          <div class="set-row">
+            <div class="sr-ic"><BaseIcon name="user" /></div>
+            <div class="sr-main">
+              <div class="sr-title">{{ t("settings.account") }}</div>
+              <div class="sr-sub">
+                {{ auth.user?.name }} · {{ auth.user?.username }}
+                <template v-if="auth.user?.telegramUsername">
+                  · @{{ auth.user.telegramUsername }}
+                </template>
+              </div>
+            </div>
+          </div>
+          <div class="set-divider" />
+          <div class="set-row">
+            <div class="sr-ic"><BaseIcon name="map" /></div>
+            <div class="sr-main">
+              <div class="sr-title">{{ t("settings.language") }}</div>
+              <div class="sr-sub">{{ t("settings.language.hint") }}</div>
+            </div>
+            <div class="lang-switch">
+              <button
+                v-for="l in LOCALES"
+                :key="l"
+                :class="['lang-opt', { on: locale === l }]"
+                :disabled="langSaving"
+                @click="changeLanguage(l)"
+              >
+                {{ t("lang." + l) }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="integ-banner">
           <div class="ib-icon"><BaseIcon name="shield" /></div>
           <div class="ib-main">
@@ -843,3 +899,75 @@ onMounted(() => {
     </template>
   </div>
 </template>
+
+<style scoped>
+.set-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 6px 16px;
+  margin-bottom: 16px;
+}
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+}
+.sr-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface-3);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.sr-ic :deep(svg) {
+  width: 17px;
+  height: 17px;
+}
+.sr-main {
+  flex: 1;
+  min-width: 0;
+}
+.sr-title {
+  font-size: 14px;
+  font-weight: 650;
+}
+.sr-sub {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+.set-divider {
+  height: 1px;
+  background: var(--border);
+}
+.lang-switch {
+  display: flex;
+  gap: 3px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.lang-opt {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 13px;
+  cursor: pointer;
+}
+.lang-opt.on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+</style>

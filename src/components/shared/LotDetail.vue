@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
 import type { Lot } from "@/types/lot";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import MatchRing from "@/components/shared/MatchRing.vue";
@@ -6,7 +7,9 @@ import PipelineBlock from "@/components/shared/PipelineBlock.vue";
 import SpecsTable from "@/components/shared/SpecsTable.vue";
 import PricingBlock from "@/components/shared/PricingBlock.vue";
 import EmptyState from "@/components/shared/EmptyState.vue";
+import { api } from "@/lib/api";
 import { fmtNum, compactSom, deadline } from "@/lib/formatters";
+import { useI18n } from "@/composables/useI18n";
 
 const props = defineProps<{
   lot: Lot | null;
@@ -17,14 +20,29 @@ const emit = defineEmits<{
   reject: [id: string];
   undo: [id: string];
 }>();
+
+const { t } = useI18n();
+
+// Rasmsiz lotlarda backend 404 qaytaradi — shu holda rasmni yashiramiz.
+// Lot almashganda qayta ko'rsatish uchun tiklaymiz.
+const isImageVisible = ref(true);
+// Rasmni bosganda kattalashtirilgan ko'rinish (lightbox).
+const isZoomOpen = ref(false);
+watch(
+  () => props.lot?.id,
+  () => {
+    isImageVisible.value = true;
+    isZoomOpen.value = false;
+  },
+);
 </script>
 
 <template>
   <EmptyState
     v-if="!lot"
     icon="arrowRight"
-    title="Lot tanlanmagan"
-    description="Tahlil, moslik dalillari va narx hisob-kitobini ko'rish uchun chapdagi navbatdan lotni tanlang."
+    :title="t('lotDetail.empty.title')"
+    :description="t('lotDetail.empty.desc')"
   />
 
   <div v-else class="detail-pane">
@@ -51,8 +69,10 @@ const emit = defineEmits<{
                   text-decoration: none;
                 "
               >
-                <BaseIcon name="external" :style="{ width: '13px', height: '13px' }" />Uzex'da
-                ochish
+                <BaseIcon
+                  name="external"
+                  :style="{ width: '13px', height: '13px' }"
+                />{{ t("common.openInUzex") }}
               </a>
             </div>
             <h1 class="d-title">{{ lot.title }}</h1>
@@ -73,16 +93,42 @@ const emit = defineEmits<{
           <MatchRing :value="lot.match.overall" :size="62" />
         </div>
 
+        <!-- Mahsulot rasmi (UzEx) — bosilganda lightbox; rasmsiz lotda yashiriladi -->
+        <figure
+          v-if="isImageVisible"
+          class="lot-hero"
+          :title="t('common.zoom')"
+          @click="isZoomOpen = true"
+        >
+          <img
+            :key="lot.id"
+            :src="api.lotImageUrl(lot.id)"
+            :alt="lot.title"
+            loading="lazy"
+            @error="isImageVisible = false"
+          />
+          <span class="lh-zoom"><BaseIcon name="search" /></span>
+          <figcaption>
+            <BaseIcon name="package" />
+            <span>{{ t("lotDetail.productImage") }}</span>
+            <span class="lh-src">{{ lot.match.stock.code }}</span>
+          </figcaption>
+        </figure>
+
         <div class="d-meta-row">
           <div class="meta-box">
-            <div class="mb-label"><BaseIcon name="package" />Miqdor</div>
+            <div class="mb-label">
+              <BaseIcon name="package" />{{ t("common.quantity") }}
+            </div>
             <div class="mb-val num">{{ fmtNum(lot.qty) }}</div>
             <div class="mb-sub">{{ lot.unit }}</div>
           </div>
           <div class="meta-box">
-            <div class="mb-label"><BaseIcon name="coins" />Maksimal narx</div>
+            <div class="mb-label">
+              <BaseIcon name="coins" />{{ t("common.maxPrice") }}
+            </div>
             <div class="mb-val mono">{{ compactSom(lot.maxPrice) }}</div>
-            <div class="mb-sub">so'm</div>
+            <div class="mb-sub">{{ t("currency.som") }}</div>
           </div>
           <div
             :class="[
@@ -97,23 +143,25 @@ const emit = defineEmits<{
             <div class="mb-label">
               <BaseIcon name="clock" />
               {{
-                deadline(lot.deadlineH).closed ? "Holat" : "Muddat tugashiga"
+                deadline(lot.deadlineH).closed
+                  ? t("lotDetail.status")
+                  : t("lotDetail.timeUntilDeadline")
               }}
             </div>
             <div class="mb-val">
               {{
                 deadline(lot.deadlineH).closed
-                  ? "Yopilgan"
+                  ? t("time.closed")
                   : deadline(lot.deadlineH).text
               }}
             </div>
             <div class="mb-sub">
               {{
                 deadline(lot.deadlineH).closed
-                  ? "tender yopilgan"
+                  ? t("lotDetail.tenderClosed")
                   : deadline(lot.deadlineH).urgent
-                    ? "shoshilinch"
-                    : "qoldi"
+                    ? t("lotDetail.urgent")
+                    : t("lotDetail.remaining")
               }}
             </div>
           </div>
@@ -129,12 +177,12 @@ const emit = defineEmits<{
           </div>
           <div>
             <div class="ds-t">
-              {{ lot.status === "accepted" ? "Qabul qilingan" : "Rad etilgan" }}
+              {{ lot.status === "accepted" ? t("queue.tab.accepted") : t("queue.tab.rejected") }}
             </div>
             <div class="ds-s">{{ lot.decidedBy }} · {{ lot.decidedAgo }}</div>
           </div>
           <button class="undo-btn" @click="emit('undo', lot.id)">
-            Navbatga qaytarish
+            {{ t("lotDetail.returnToQueue") }}
           </button>
         </div>
 
@@ -147,8 +195,8 @@ const emit = defineEmits<{
             >
               <BaseIcon name="sparkle" />
             </div>
-            <h2>Moslik tahlili</h2>
-            <span class="sh-sub">Ikki bosqichli AI quvuri</span>
+            <h2>{{ t("lotDetail.matchAnalysis.title") }}</h2>
+            <span class="sh-sub">{{ t("lotDetail.matchAnalysis.subtitle") }}</span>
           </div>
           <PipelineBlock :lot="lot" />
         </div>
@@ -162,8 +210,8 @@ const emit = defineEmits<{
             >
               <BaseIcon name="flag" />
             </div>
-            <h2>Texnik xususiyatlar</h2>
-            <span class="sh-sub">talab ⟷ zaxira</span>
+            <h2>{{ t("lotDetail.specs.title") }}</h2>
+            <span class="sh-sub">{{ t("lotDetail.specs.subtitle") }}</span>
           </div>
           <SpecsTable :specs="lot.match.specs" />
         </div>
@@ -177,8 +225,8 @@ const emit = defineEmits<{
             >
               <BaseIcon name="scale" />
             </div>
-            <h2>Narx va foydalilik</h2>
-            <span class="sh-sub">to'lovlar hisobga olingan</span>
+            <h2>{{ t("lotDetail.pricing.title") }}</h2>
+            <span class="sh-sub">{{ t("lotDetail.pricing.subtitle") }}</span>
           </div>
           <PricingBlock :lot="lot" />
         </div>
@@ -192,17 +240,45 @@ const emit = defineEmits<{
           name="cpu"
           :style="{ width: '14px', height: '14px', opacity: 0.6 }"
         />
-        Yakuniy qarorni menejer qabul qiladi
+        {{ t("lotDetail.finalDecisionHint") }}
         <span style="margin-left: 8px"
-          ><kbd>R</kbd> rad · <kbd>A</kbd> qabul</span
+          ><kbd>R</kbd> {{ t("lotDetail.rejectShort") }} ·
+          <kbd>A</kbd> {{ t("lotDetail.acceptShort") }}</span
         >
       </div>
       <button class="btn btn-reject btn-lg" @click="emit('reject', lot.id)">
-        <BaseIcon name="x" /> Rad etish
+        <BaseIcon name="x" /> {{ t("common.reject") }}
       </button>
       <button class="btn btn-accept btn-lg" @click="emit('accept', lot.id)">
-        <BaseIcon name="check" /> Qabul qilish
+        <BaseIcon name="check" /> {{ t("common.accept") }}
       </button>
     </div>
+
+    <!-- Kattalashtirilgan rasm (lightbox) -->
+    <Teleport to="body">
+      <div
+        v-if="isZoomOpen && isImageVisible"
+        class="img-lightbox"
+        @click="isZoomOpen = false"
+      >
+        <button
+          class="ilb-close"
+          :aria-label="t('common.close')"
+          @click="isZoomOpen = false"
+        >
+          <BaseIcon name="x" />
+        </button>
+        <figure class="ilb-fig" @click.stop>
+          <img :src="api.lotImageUrl(lot.id)" :alt="lot.title" />
+          <figcaption>
+            <div class="ilb-cap-main">{{ lot.title }}</div>
+            <div class="ilb-cap-sub">
+              <BaseIcon name="package" />{{ lot.match.stock.code }} ·
+              {{ lot.match.stock.name }}
+            </div>
+          </figcaption>
+        </figure>
+      </div>
+    </Teleport>
   </div>
 </template>

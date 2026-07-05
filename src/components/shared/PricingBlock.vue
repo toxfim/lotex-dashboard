@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import type { Lot } from "@/types/lot";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
+import { useI18n } from "@/composables/useI18n";
 import { fmtSom, fmtNum, computePricing } from "@/lib/formatters";
 
 const props = defineProps<{
   lot: Lot;
 }>();
 
-const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
-  good: { cls: "good", label: "Foydali", icon: "trendUp" },
-  edge: { cls: "edge", label: "Chegarada", icon: "alert" },
-  bad: { cls: "bad", label: "Foydasiz", icon: "x" },
+const { t } = useI18n();
+
+const VIAB: Record<string, { cls: string; labelKey: string; icon: string }> = {
+  good: { cls: "good", labelKey: "lotCard.viab.good", icon: "trendUp" },
+  edge: { cls: "edge", labelKey: "lotCard.viab.edge", icon: "alert" },
+  bad: { cls: "bad", labelKey: "lotCard.viab.bad", icon: "x" },
 };
 </script>
 
@@ -19,17 +22,17 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
     <div class="price-grid">
       <div class="price-row">
         <span class="pr-label">
-          Tender maksimal narxi
+          {{ t("pricing.maxPriceLabel") }}
           <span class="pr-sub"
-            >/ {{ fmtSom(lot.pricing.maxPrice / lot.pricing.qty) }} so'm
-            birlik</span
+            >/ {{ fmtSom(lot.pricing.maxPrice / lot.pricing.qty) }}
+            {{ t("currency.som") }} {{ t("pricing.perUnitSuffix") }}</span
           >
         </span>
         <span class="pr-val mono">{{ fmtSom(lot.pricing.maxPrice) }}</span>
       </div>
       <div class="price-row">
         <span class="pr-label">
-          Bizning taklif narxi
+          {{ t("pricing.ourBidLabel") }}
           <span class="pr-sub"
             >{{ fmtNum(lot.pricing.qty) }} {{ lot.unit }} ×
             {{ fmtSom(lot.pricing.bidUnit) }}</span
@@ -41,7 +44,7 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
       </div>
       <div class="price-row minus">
         <span class="pr-label">
-          Tannarx (zaxiradan)
+          {{ t("pricing.costLabel") }}
           <span class="pr-sub"
             >{{ fmtSom(lot.pricing.unitCost) }} ×
             {{ fmtNum(lot.pricing.qty) }}</span
@@ -57,7 +60,7 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
             name="shield"
             :style="{ width: '14px', height: '14px', opacity: 0.6 }"
           />
-          Ishtirok kafolati / to'lov
+          {{ t("pricing.feeLabel") }}
         </span>
         <span class="pr-val mono">− {{ fmtSom(lot.pricing.fee) }}</span>
       </div>
@@ -69,7 +72,7 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
         ]"
       >
         <span class="pr-label">
-          Sof foyda
+          {{ t("pricing.netProfitLabel") }}
           <span :class="['margin-tag', lot.pricing.verdict]">
             {{ computePricing(lot.pricing).net >= 0 ? "+" : ""
             }}{{ computePricing(lot.pricing).netPct.toFixed(1) }}%
@@ -77,7 +80,8 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
         </span>
         <span class="pr-val mono">
           {{ computePricing(lot.pricing).net >= 0 ? "" : "− "
-          }}{{ fmtSom(Math.abs(computePricing(lot.pricing).net)) }} so'm
+          }}{{ fmtSom(Math.abs(computePricing(lot.pricing).net)) }}
+          {{ t("currency.som") }}
         </span>
       </div>
     </div>
@@ -87,32 +91,33 @@ const VIAB: Record<string, { cls: string; label: string; icon: string }> = {
       </div>
       <div class="vb-text">
         <div class="vb-title">
-          {{ VIAB[lot.pricing.verdict].label
+          {{ t(VIAB[lot.pricing.verdict].labelKey)
           }}{{
             lot.pricing.verdict === "good"
-              ? " — ishtirok tavsiya etiladi"
+              ? t("pricing.verdict.good.title")
               : lot.pricing.verdict === "edge"
-                ? " — diqqat bilan ko'rib chiqing"
-                : " — ishtirok tavsiya etilmaydi"
+                ? t("pricing.verdict.edge.title")
+                : t("pricing.verdict.bad.title")
           }}
         </div>
         <div class="vb-sub">
           <template v-if="lot.pricing.verdict === 'good'">
-            Taklif narxi maksimaldan
             {{
-              (
-                100 -
-                (computePricing(lot.pricing).bidTotal / lot.pricing.maxPrice) *
-                  100
-              ).toFixed(1)
-            }}% past, marja barqaror.
+              t("pricing.verdict.good.sub", {
+                pct: (
+                  100 -
+                  (computePricing(lot.pricing).bidTotal /
+                    lot.pricing.maxPrice) *
+                    100
+                ).toFixed(1),
+              })
+            }}
           </template>
           <template v-else-if="lot.pricing.verdict === 'edge'">
-            Marja past — narx yoki tannarxdagi kichik o'zgarish foydani
-            yo'qotishi mumkin.
+            {{ t("pricing.verdict.edge.sub") }}
           </template>
           <template v-else>
-            Tannarx va to'lovlar bilan ishtirok zarar keltiradi.
+            {{ t("pricing.verdict.bad.sub") }}
           </template>
         </div>
       </div>

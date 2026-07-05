@@ -16,6 +16,7 @@ export const ICON_PATHS: Record<string, string> = {
   package:
     '<path d="m7.5 4.3 9 5.2M3 7l9 5 9-5-9-5-9 5Z"/><path d="M3 7v10l9 5 9-5V7"/><path d="M12 12v10"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  chevronDown: '<path d="m6 9 6 6 6-6"/>',
   x: '<path d="M18 6 6 18M6 6l12 12"/>',
   minus: '<path d="M5 12h14"/>',
   sparkle:
@@ -51,6 +52,15 @@ export const ICON_PATHS: Record<string, string> = {
     '<path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',
   external:
     '<path d="M14 4h6v6M20 4 10 14M19 13v6a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/>',
+  memory:
+    '<rect x="3" y="8" width="18" height="9" rx="1"/><path d="M6 8V5M10 8V5M14 8V5M18 8V5M7 12v3M11 12v3M15 12v3M19 12v3"/>',
+  gpu: '<rect x="2" y="6" width="20" height="11" rx="2"/><circle cx="9" cy="11.5" r="3"/><circle cx="16" cy="11.5" r="2"/><path d="M4 17v3M8 17v3"/>',
+  drive:
+    '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 6v12"/><circle cx="14.5" cy="12" r="1.3"/>',
+  power: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+  fan: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 10c0-3 1-5 3-5 1.6 0 2.1 2.2 1 4M14 12c2.6 1.5 4 3 3 4.7-.8 1.4-3 .6-3.8-1.5M10 14c-2.6-1.5-4-3-3-4.7.8-1.4 3-.6 3.8 1.5"/>',
+  tower:
+    '<rect x="6" y="2" width="12" height="20" rx="2"/><path d="M9 6h6M9 9h6"/><circle cx="12" cy="17" r="1.3"/>',
 };
 
 export type IconName = keyof typeof ICON_PATHS;

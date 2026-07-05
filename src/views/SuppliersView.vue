@@ -3,10 +3,12 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useSupplierStore } from "@/stores/suppliers";
 import { useMatchRunner } from "@/composables/useMatchRunner";
+import { useI18n } from "@/composables/useI18n";
 import { api } from "@/lib/api";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
 import BaseSelect from "@/components/shared/BaseSelect.vue";
 import EmptyState from "@/components/shared/EmptyState.vue";
+import TopbarSettings from "@/components/layout/TopbarSettings.vue";
 import { fmtNum } from "@/lib/formatters";
 import type {
   ApiSupplier,
@@ -20,11 +22,12 @@ import type {
 const store = useSupplierStore();
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
-const CURRENCY_OPTS = [
+const CURRENCY_OPTS = computed(() => [
   { v: "USD", l: "USD ($)" },
-  { v: "UZS", l: "UZS (so'm)" },
-];
+  { v: "UZS", l: `UZS (${t("currency.som")})` },
+]);
 
 const PRODUCTS_PAGE_SIZE = 50;
 
@@ -87,7 +90,8 @@ const deleteTarget = ref<ApiSupplier | null>(null);
 const deleteBusy = ref(false);
 
 // --- "Hozir match qil" / "Qayta match" (umumiy composable) ---
-const { matchBusy, matchNote, runMatchNow, rematchUnmatched } = useMatchRunner();
+const { matchBusy, matchNote, runMatchNow, rematchUnmatched } =
+  useMatchRunner();
 
 // --- "Barcha tovarlar" jadvali (global supplies) ---
 const products = ref<ApiSupplierProductWithSupplier[]>([]);
@@ -116,11 +120,11 @@ const hasMoreProducts = computed(
 );
 
 const supplierOptions = computed(() => [
-  { v: "", l: "Barcha ta'minotchilar" },
+  { v: "", l: t("suppliers.filter.all") },
   ...store.items.map((s) => ({ v: s.id, l: s.name })),
 ]);
 const categoryOptions = computed(() => [
-  { v: "", l: "Barcha kategoriyalar" },
+  { v: "", l: t("lots.filter.allCategories") },
   ...categories.value.map((c) => ({ v: c, l: c })),
 ]);
 
@@ -155,7 +159,7 @@ function initials(name: string): string {
 
 function fmtPrice(value: number | null, currency: CurrencyType): string {
   if (value === null || value === undefined) return "—";
-  return `${fmtNum(value)} ${currency === "USD" ? "$" : "so'm"}`;
+  return `${fmtNum(value)} ${currency === "USD" ? "$" : t("currency.som")}`;
 }
 
 /** Ustun indeksi → harf: 0→A, 25→Z, 26→AA. */
@@ -216,7 +220,7 @@ async function handleFormSubmit() {
       formOpen.value = false;
     }
   } catch (e) {
-    formError.value = e instanceof Error ? e.message : "Saqlab bo'lmadi";
+    formError.value = e instanceof Error ? e.message : t("common.saveError");
   } finally {
     formBusy.value = false;
   }
@@ -247,17 +251,17 @@ function handleDrop(e: DragEvent) {
 }
 
 async function handleUpload(file: File) {
-  const t = uploadTarget.value;
-  if (!t || uploadBusy.value) return;
+  const target = uploadTarget.value;
+  if (!target || uploadBusy.value) return;
   uploadBusy.value = true;
   importNote.value = null;
   try {
-    const res = await api.uploadSupplierFile(t.id, file);
+    const res = await api.uploadSupplierFile(target.id, file);
     await applyUploadResult(res.data);
   } catch (e) {
     importNote.value = {
       kind: "err",
-      text: e instanceof Error ? e.message : "Faylni yuklab bo'lmadi",
+      text: e instanceof Error ? e.message : t("suppliers.upload.fileError"),
     };
   } finally {
     uploadBusy.value = false;
@@ -265,15 +269,19 @@ async function handleUpload(file: File) {
 }
 
 async function applyUploadResult(result: SupplierUploadResult) {
-  const t = uploadTarget.value;
+  const target = uploadTarget.value;
   if (result.status === "parsed") {
     importNote.value = {
       kind: "ok",
-      text: `${result.rowsParsed} ta tovar o'qildi${
-        result.autoMapped ? " (saqlangan shablon)" : ""
-      }${result.replaced ? `, ${result.replaced} ta eskisi almashtirildi` : ""}.`,
+      text: `${t("suppliers.upload.parsedCount", { n: result.rowsParsed })}${
+        result.autoMapped ? t("suppliers.upload.savedTemplate") : ""
+      }${
+        result.replaced
+          ? t("suppliers.upload.replaced", { n: result.replaced })
+          : ""
+      }.`,
     };
-    if (t) await store.refreshOne(t.id);
+    if (target) await store.refreshOne(target.id);
     await afterProductsChanged();
     return;
   }
@@ -341,19 +349,20 @@ async function handleConfirmMapping() {
   try {
     const res = await api.confirmSupplierMapping(mapping.uploadId, buildSpec());
     mappingOpen.value = false;
-    const t = uploadTarget.value;
+    const target = uploadTarget.value;
     importNote.value = {
       kind: "ok",
-      text: `${res.data.rowsParsed} ta tovar o'qildi${
+      text: `${t("suppliers.upload.parsedCount", { n: res.data.rowsParsed })}${
         res.data.replaced
-          ? `, ${res.data.replaced} ta eskisi almashtirildi`
+          ? t("suppliers.upload.replaced", { n: res.data.replaced })
           : ""
-      }. Shablon saqlandi.`,
+      }.${t("suppliers.mapping.confirmedSuffix")}`,
     };
-    if (t) await store.refreshOne(t.id);
+    if (target) await store.refreshOne(target.id);
     await afterProductsChanged();
   } catch (e) {
-    mappingError.value = e instanceof Error ? e.message : "Tasdiqlashda xato";
+    mappingError.value =
+      e instanceof Error ? e.message : t("suppliers.mapping.confirmError");
   } finally {
     mappingBusy.value = false;
   }
@@ -370,7 +379,7 @@ async function handleDelete() {
     if (filterSupplierId.value === removedId) updateQuery({ supplier: "" });
     deleteTarget.value = null;
   } catch (e) {
-    store.error = e instanceof Error ? e.message : "O'chirib bo'lmadi";
+    store.error = e instanceof Error ? e.message : t("suppliers.deleteError");
   } finally {
     deleteBusy.value = false;
   }
@@ -394,7 +403,7 @@ async function loadProducts(reset = false) {
     productsTotal.value = res.meta.total;
   } catch (e) {
     productsError.value =
-      e instanceof Error ? e.message : "Tovarlarni yuklab bo'lmadi";
+      e instanceof Error ? e.message : t("suppliers.products.loadError");
   } finally {
     productsLoading.value = false;
   }
@@ -412,7 +421,10 @@ async function loadCategories() {
     );
     categories.value = res.data;
     // Joriy kategoriya filtri yangi ro'yxatda yo'q bo'lsa — URL'dan olib tashlaymiz
-    if (filterCategory.value && !categories.value.includes(filterCategory.value)) {
+    if (
+      filterCategory.value &&
+      !categories.value.includes(filterCategory.value)
+    ) {
       updateQuery({ category: "" });
     }
   } catch {
@@ -462,31 +474,32 @@ onMounted(() => {
   <div class="page">
     <header class="topbar">
       <div>
-        <h1>Ta'minot</h1>
-        <div class="crumb-sub">Ta'minotchilar va narx-ro'yxatlari</div>
+        <h1>{{ t("suppliers.title") }}</h1>
+        <div class="crumb-sub">{{ t("suppliers.subtitle") }}</div>
       </div>
       <div class="topbar-right">
         <button
           class="btn btn-ghost"
           :disabled="matchBusy"
-          title="Yangi (NEW) lotlarni ta'minotchi tovarlariga moslaydi"
+          :title="t('queue.matchNow.title')"
           @click="runMatchNow"
         >
           <BaseIcon name="cpu" />{{
-            matchBusy ? "Matching ketmoqda…" : "Hozir match qil"
+            matchBusy ? t("queue.matching") : t("queue.matchNow")
           }}
         </button>
         <button
           class="btn btn-ghost"
           :disabled="matchBusy"
-          title="Mos topilmagan (UNMATCHED) lotlarni qayta moslaydi"
+          :title="t('queue.rematch.title')"
           @click="rematchUnmatched"
         >
-          <BaseIcon name="refresh" />Qayta match
+          <BaseIcon name="refresh" />{{ t("queue.rematch") }}
         </button>
         <button class="btn btn-add" @click="openAdd">
-          <BaseIcon name="plus" />Ta'minotchi qo'shish
+          <BaseIcon name="plus" />{{ t("suppliers.add") }}
         </button>
+        <TopbarSettings />
       </div>
     </header>
 
@@ -495,21 +508,23 @@ onMounted(() => {
         <div class="integ-banner">
           <div class="ib-icon"><BaseIcon name="package" /></div>
           <div class="ib-main">
-            <div class="ib-title">Ta'minotchi narx-ro'yxatlari</div>
+            <div class="ib-title">{{ t("suppliers.banner.title") }}</div>
             <div class="ib-sub">
-              Excel narx-ro'yxatini yuklang — tuzilma bir marta tasdiqlanib
-              shablonga aylanadi, keyingi yuklashlar avtomatik o'qiladi
+              {{ t("suppliers.banner.sub") }}
             </div>
           </div>
           <div class="ib-stats">
             <div class="ibs">
-              <b class="num">{{ stats.total }}</b><span>Ta'minotchi</span>
+              <b class="num">{{ stats.total }}</b
+              ><span>{{ t("supplierModal.eyebrow") }}</span>
             </div>
             <div class="ibs">
-              <b class="num">{{ fmtNum(stats.products) }}</b><span>Tovar</span>
+              <b class="num">{{ fmtNum(stats.products) }}</b
+              ><span>{{ t("shop.col.product") }}</span>
             </div>
             <div class="ibs">
-              <b class="num">{{ stats.uploads }}</b><span>Yuklama</span>
+              <b class="num">{{ stats.uploads }}</b
+              ><span>{{ t("suppliers.upload.label") }}</span>
             </div>
           </div>
         </div>
@@ -535,7 +550,7 @@ onMounted(() => {
             :class="{ on: tab === 'suppliers' }"
             @click="router.push('/suppliers')"
           >
-            <BaseIcon name="package" />Ta'minotchilar
+            <BaseIcon name="package" />{{ t("suppliers.tab.suppliers") }}
             <span class="count-pill">{{ stats.total }}</span>
           </button>
           <button
@@ -543,7 +558,7 @@ onMounted(() => {
             :class="{ on: tab === 'products' }"
             @click="router.push('/supplies')"
           >
-            <BaseIcon name="box" />Barcha tovarlar
+            <BaseIcon name="box" />{{ t("suppliers.tab.allProducts") }}
             <span class="count-pill">{{ fmtNum(stats.products) }}</span>
           </button>
         </div>
@@ -560,13 +575,16 @@ onMounted(() => {
               color: var(--ink-3);
             "
           >
-            Yuklanmoqda…
+            {{ t("common.loading") }}
           </div>
 
-          <div v-else-if="store.error && !store.loaded" style="margin-top: 18px">
+          <div
+            v-else-if="store.error && !store.loaded"
+            style="margin-top: 18px"
+          >
             <EmptyState
               icon="alert"
-              title="Yuklab bo'lmadi"
+              :title="t('common.loadError')"
               :description="store.error"
             />
           </div>
@@ -574,8 +592,8 @@ onMounted(() => {
           <div v-else-if="store.count === 0" style="margin-top: 18px">
             <EmptyState
               icon="package"
-              title="Hali ta'minotchi yo'q"
-              description="“Ta'minotchi qo'shish” orqali birinchi ta'minotchini qo'shing va narx-ro'yxatini yuklang."
+              :title="t('suppliers.empty.title')"
+              :description="t('suppliers.empty.desc')"
             />
           </div>
 
@@ -768,7 +786,7 @@ onMounted(() => {
               color: var(--ink-3);
             "
           >
-            Yuklanmoqda…
+            {{ t("common.loading") }}
           </div>
 
           <div v-else style="margin-top: 14px">
@@ -782,7 +800,8 @@ onMounted(() => {
           <!-- pastki qator: hisob + yana yuklash -->
           <div v-if="productsShown > 0" class="products-foot">
             <span class="foot-count"
-              >{{ fmtNum(productsShown) }} / {{ fmtNum(productsTotal) }} tovar</span
+              >{{ fmtNum(productsShown) }} /
+              {{ fmtNum(productsTotal) }} tovar</span
             >
             <button
               v-if="hasMoreProducts"
@@ -803,7 +822,9 @@ onMounted(() => {
         <div class="modal" @click.stop>
           <div class="modal-top">
             <span class="mt-eyebrow">{{
-              formMode === "add" ? "Yangi ta'minotchi" : "Ta'minotchini tahrirlash"
+              formMode === "add"
+                ? "Yangi ta'minotchi"
+                : "Ta'minotchini tahrirlash"
             }}</span>
             <button class="icon-btn modal-x" @click="formOpen = false">
               <BaseIcon name="x" />
@@ -1025,7 +1046,8 @@ onMounted(() => {
                     <thead>
                       <tr>
                         <th
-                          v-for="ci in previewForSheet(sheet.sheet)!.columnCount"
+                          v-for="ci in previewForSheet(sheet.sheet)!
+                            .columnCount"
                           :key="ci"
                         >
                           {{ colLetter(ci - 1) }}
@@ -1040,7 +1062,8 @@ onMounted(() => {
                         :key="ri"
                       >
                         <td
-                          v-for="ci in previewForSheet(sheet.sheet)!.columnCount"
+                          v-for="ci in previewForSheet(sheet.sheet)!
+                            .columnCount"
                           :key="ci"
                         >
                           {{ row[ci - 1] ?? "" }}
@@ -1067,7 +1090,8 @@ onMounted(() => {
                       :class="{ on: sheet.categoryFromSheetName }"
                       style="margin-top: 0"
                       @click="
-                        sheet.categoryFromSheetName = !sheet.categoryFromSheetName
+                        sheet.categoryFromSheetName =
+                          !sheet.categoryFromSheetName
                       "
                     >
                       <span

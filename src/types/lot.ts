@@ -13,6 +13,8 @@ export interface MatchStock {
   cost: number;
   /** supplier-based matching: mos topilgan ta'minotchi nomi (mavjud bo'lsa). */
   supplier?: string | null;
+  /** ta'minotchi id si — /supplies?supplier=<id> linki uchun (mavjud bo'lsa). */
+  supplierId?: string | null;
 }
 
 export interface LotMatch {
