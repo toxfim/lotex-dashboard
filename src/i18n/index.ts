@@ -449,9 +449,6 @@ const uz: Record<string, string> = {
   "login.hero.title": "UzEx tenderlarini avtomatik yutib olish tizimi",
   "login.hero.desc":
     "Pipeline lotlarni skanerlaydi va ombor bilan solishtiradi — operator har bir taklifni ko'rib chiqib tasdiqlaydi.",
-  "login.hero.winRate": "G'oliblik",
-  "login.hero.watching": "Kuzatuvda",
-  "login.hero.revenue": "Daromad",
   "login.usernameLabel": "Login",
   "login.passwordLabel": "Parol",
   "login.submit": "Kirish",
@@ -912,9 +909,6 @@ const ru: Record<string, string> = {
   "login.hero.title": "Система автоматического выигрыша тендеров UzEx",
   "login.hero.desc":
     "Пайплайн сканирует лоты и сопоставляет их со складом — оператор проверяет и подтверждает каждое предложение.",
-  "login.hero.winRate": "Победы",
-  "login.hero.watching": "В работе",
-  "login.hero.revenue": "Доход",
   "login.usernameLabel": "Логин",
   "login.passwordLabel": "Пароль",
   "login.submit": "Войти",

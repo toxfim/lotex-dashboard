@@ -84,20 +84,6 @@ onUnmounted(stopPolling);
       <div class="lh-bottom">
         <h2 class="lh-title">{{ t("login.hero.title") }}</h2>
         <p class="lh-desc">{{ t("login.hero.desc") }}</p>
-        <div class="lh-stats">
-          <div class="lh-stat">
-            <span class="lh-val">71%</span>
-            <span class="lh-lbl">{{ t("login.hero.winRate") }}</span>
-          </div>
-          <div class="lh-stat">
-            <span class="lh-val">148</span>
-            <span class="lh-lbl">{{ t("login.hero.watching") }}</span>
-          </div>
-          <div class="lh-stat">
-            <span class="lh-val">1.8 <small>mlrd</small></span>
-            <span class="lh-lbl">{{ t("login.hero.revenue") }}</span>
-          </div>
-        </div>
       </div>
     </aside>
 
@@ -224,27 +210,6 @@ onUnmounted(stopPolling);
   line-height: 1.55;
   max-width: 380px;
 }
-.lh-stats {
-  display: flex;
-  gap: 34px;
-  margin-top: 38px;
-}
-.lh-val {
-  display: block;
-  font-size: 26px;
-  font-weight: 700;
-  font-family: var(--mono);
-}
-.lh-val small {
-  font-size: 14px;
-}
-.lh-lbl {
-  display: block;
-  font-size: 12px;
-  color: #a9a9b0;
-  margin-top: 2px;
-}
-
 /* ---------------------------------------------------------------- forma */
 .login-side {
   flex: 1;
