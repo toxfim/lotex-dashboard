@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
 import { useLotStore } from "@/stores/lots";
+import { useShopStore } from "@/stores/shop";
 import { useToast } from "@/composables/useToast";
 import { useI18n } from "@/composables/useI18n";
 import BaseIcon from "@/components/shared/BaseIcon.vue";
@@ -12,11 +13,13 @@ import { compactSom, deadline } from "@/lib/formatters";
 import type { Lot, LotStatus } from "@/types/lot";
 
 const lotStore = useLotStore();
+const shopStore = useShopStore();
 const { pushToast } = useToast();
 const { t } = useI18n();
 
 const status = ref("all");
 const cat = ref("all");
+const entity = ref("all");
 const query = ref("");
 const sortKey = ref<"match" | "value" | "deadline" | "title">("match");
 const sortDir = ref<"asc" | "desc">("desc");
@@ -51,6 +54,11 @@ const rows = computed(() => {
     .filter((l) => cat.value === "all" || l.category === cat.value)
     .filter(
       (l) =>
+        entity.value === "all" ||
+        l.legalEntities.some((e) => e.id === entity.value),
+    )
+    .filter(
+      (l) =>
         !q ||
         l.title.toLowerCase().includes(q) ||
         l.customer.toLowerCase().includes(q) ||
@@ -76,7 +84,7 @@ const pagedRows = computed(() => {
 
 // Filtr/qidiruv/saralash o'zgarsa birinchi sahifaga qaytamiz; ro'yxat qisqarsa
 // joriy sahifani oxirgi mavjud sahifaga klamp qilamiz.
-watch([status, cat, query, sortKey, sortDir], () => {
+watch([status, cat, entity, query, sortKey, sortDir], () => {
   page.value = 1;
 });
 watch(totalPages, (max) => {
@@ -123,6 +131,7 @@ const openLot = computed(() =>
 
 onMounted(() => {
   lotStore.ensureLoaded();
+  shopStore.ensureLegalEntities();
 });
 </script>
 
@@ -163,6 +172,13 @@ onMounted(() => {
                 l: c === 'all' ? t('lots.filter.allCategories') : c,
               }))
             "
+          />
+          <BaseSelect
+            v-model="entity"
+            :options="[
+              { v: 'all', l: t('lots.filter.allEntities') },
+              ...shopStore.legalEntities.map((e) => ({ v: e.id, l: e.name })),
+            ]"
           />
           <div class="filter-spacer" />
           <span class="result-count"

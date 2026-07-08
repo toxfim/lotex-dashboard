@@ -113,6 +113,7 @@ const uz: Record<string, string> = {
   "lots.search.placeholder": "Lot, buyurtmachi yoki ID qidirish",
   "lots.filter.allStatuses": "Barcha holatlar",
   "lots.filter.allCategories": "Barcha kategoriyalar",
+  "lots.filter.allEntities": "Barcha yuridik shaxslar",
   "lots.col.lot": "Lot",
   "lots.col.customer": "Buyurtmachi",
   "lots.col.category": "Kategoriya",
@@ -127,6 +128,7 @@ const uz: Record<string, string> = {
   "lotDetail.empty.title": "Lot tanlanmagan",
   "lotDetail.empty.desc":
     "Tahlil, moslik dalillari va narx hisob-kitobini ko'rish uchun chapdagi navbatdan lotni tanlang.",
+  "lotDetail.recommendedFor": "Tavsiya qilingan:",
   "lotDetail.productImage": "Mahsulot rasmi",
   "lotDetail.status": "Holat",
   "lotDetail.timeUntilDeadline": "Muddat tugashiga",
@@ -575,6 +577,7 @@ const ru: Record<string, string> = {
   "lots.search.placeholder": "Поиск по лоту, заказчику или ID",
   "lots.filter.allStatuses": "Все статусы",
   "lots.filter.allCategories": "Все категории",
+  "lots.filter.allEntities": "Все юр. лица",
   "lots.col.lot": "Лот",
   "lots.col.customer": "Заказчик",
   "lots.col.category": "Категория",
@@ -589,6 +592,7 @@ const ru: Record<string, string> = {
   "lotDetail.empty.title": "Лот не выбран",
   "lotDetail.empty.desc":
     "Выберите лот из очереди слева, чтобы увидеть анализ, доказательства соответствия и расчёт цены.",
+  "lotDetail.recommendedFor": "Рекомендовано:",
   "lotDetail.productImage": "Фото товара",
   "lotDetail.status": "Статус",
   "lotDetail.timeUntilDeadline": "До окончания срока",

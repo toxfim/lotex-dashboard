@@ -62,6 +62,7 @@ export interface GetLotsParams {
   tenderResult?: "UNKNOWN" | "WON" | "LOST";
   search?: string;
   matched?: boolean;
+  legalEntityId?: string;
   sortBy?: "createdAt" | "price" | "tenderStartDate" | "tenderEndDate";
   order?: "asc" | "desc";
 }

@@ -58,4 +58,6 @@ export interface Lot {
   decidedAgo?: string;
   match: LotMatch;
   pricing: LotPricing;
+  /** Uzex tomonidan lotni tavsiya qilgan yuridik shaxs(lar) (bir nechta bo'lishi mumkin). */
+  legalEntities: { id: string; name: string }[];
 }

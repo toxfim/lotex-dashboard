@@ -79,6 +79,8 @@ export interface ApiLotBase {
   tenderResult: ApiTenderResult;
   status: ApiLotStatus;
   createdAt: string;
+  /** Uzex tomonidan lotni tavsiya qilgan yuridik shaxs(lar) (bir nechta bo'lishi mumkin). */
+  legalEntities: { id: string; name: string; inn: string | null }[];
 }
 
 /** GET /api/lots javobidagi lot — recommendation bilan birga (null bo'lishi mumkin). */

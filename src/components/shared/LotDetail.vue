@@ -89,6 +89,16 @@ watch(
               />
               {{ lot.region }}
             </div>
+            <div v-if="lot.legalEntities.length" class="d-cust">
+              <BaseIcon
+                name="store"
+                :style="{ width: '14px', height: '14px', opacity: 0.7 }"
+              />
+              {{ t("lotDetail.recommendedFor") }}
+              <span v-for="e in lot.legalEntities" :key="e.id" class="chip">{{
+                e.name
+              }}</span>
+            </div>
           </div>
           <MatchRing :value="lot.match.overall" :size="62" />
         </div>
@@ -177,7 +187,11 @@ watch(
           </div>
           <div>
             <div class="ds-t">
-              {{ lot.status === "accepted" ? t("queue.tab.accepted") : t("queue.tab.rejected") }}
+              {{
+                lot.status === "accepted"
+                  ? t("queue.tab.accepted")
+                  : t("queue.tab.rejected")
+              }}
             </div>
             <div class="ds-s">{{ lot.decidedBy }} · {{ lot.decidedAgo }}</div>
           </div>
@@ -196,7 +210,9 @@ watch(
               <BaseIcon name="sparkle" />
             </div>
             <h2>{{ t("lotDetail.matchAnalysis.title") }}</h2>
-            <span class="sh-sub">{{ t("lotDetail.matchAnalysis.subtitle") }}</span>
+            <span class="sh-sub">{{
+              t("lotDetail.matchAnalysis.subtitle")
+            }}</span>
           </div>
           <PipelineBlock :lot="lot" />
         </div>
@@ -242,8 +258,8 @@ watch(
         />
         {{ t("lotDetail.finalDecisionHint") }}
         <span style="margin-left: 8px"
-          ><kbd>R</kbd> {{ t("lotDetail.rejectShort") }} ·
-          <kbd>A</kbd> {{ t("lotDetail.acceptShort") }}</span
+          ><kbd>R</kbd> {{ t("lotDetail.rejectShort") }} · <kbd>A</kbd>
+          {{ t("lotDetail.acceptShort") }}</span
         >
       </div>
       <button class="btn btn-reject btn-lg" @click="emit('reject', lot.id)">

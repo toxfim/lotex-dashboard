@@ -168,6 +168,7 @@ export function mapApiLot(lot: ApiLot): Lot {
         : undefined,
     match: buildMatch(lot),
     pricing: buildPricing(lot),
+    legalEntities: lot.legalEntities ?? [],
   };
 }
 

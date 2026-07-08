@@ -53,6 +53,7 @@ export const LOTS: Lot[] = [
       fee: 1725000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l2",
@@ -96,6 +97,7 @@ export const LOTS: Lot[] = [
       fee: 2002000,
       verdict: "edge",
     },
+    legalEntities: [],
   },
   {
     id: "l3",
@@ -144,6 +146,7 @@ export const LOTS: Lot[] = [
       fee: 4896000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l4",
@@ -192,6 +195,7 @@ export const LOTS: Lot[] = [
       fee: 1732500,
       verdict: "edge",
     },
+    legalEntities: [],
   },
   {
     id: "l5",
@@ -245,6 +249,7 @@ export const LOTS: Lot[] = [
       fee: 5040000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l6",
@@ -292,6 +297,7 @@ export const LOTS: Lot[] = [
       fee: 7140000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l7",
@@ -334,6 +340,7 @@ export const LOTS: Lot[] = [
       fee: 1140000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l8",
@@ -391,6 +398,7 @@ export const LOTS: Lot[] = [
       fee: 1968000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l9",
@@ -434,6 +442,7 @@ export const LOTS: Lot[] = [
       fee: 2592000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l10",
@@ -478,6 +487,7 @@ export const LOTS: Lot[] = [
       fee: 1608000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l11",
@@ -527,6 +537,7 @@ export const LOTS: Lot[] = [
       fee: 2184000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l12",
@@ -571,6 +582,7 @@ export const LOTS: Lot[] = [
       fee: 6400000,
       verdict: "good",
     },
+    legalEntities: [],
   },
   {
     id: "l13",
@@ -615,5 +627,6 @@ export const LOTS: Lot[] = [
       fee: 2700000,
       verdict: "bad",
     },
+    legalEntities: [],
   },
 ];
