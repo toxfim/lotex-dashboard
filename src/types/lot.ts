@@ -26,12 +26,44 @@ export interface LotMatch {
   specs: LotSpec[];
 }
 
+/**
+ * "Narx va foydalilik" bloki — TO'LIQ backend hisoblaydi (UZS'da), frontend
+ * faqat formatlab ko'rsatadi. `available: false` — mos tovar/narx yo'q,
+ * blok raqamlarsiz "tahlil yo'q" holatini ko'rsatadi.
+ */
 export interface LotPricing {
-  maxPrice: number;
-  unitCost: number;
+  available: boolean;
   qty: number;
+  /** Start birlik narx (UZS). */
+  startUnit: number;
+  /** Start JAMI narx (UZS) — kartada/jadvalda ko'rsatiladigan lot qiymati. */
+  maxPrice: number;
+  /** Tan narx birlik, UZS (USD narx kurs bilan o'girilgan). */
+  unitCost: number;
+  costTotal: number;
+  /** Supplier narxi manba valyutada (masalan 180 — ya'ni $180). */
+  unitCostSource: number;
+  currency: "USD" | "UZS";
+  exchangeRate: number | null;
+  /** Tavsiya taklif narxi (birlik/jami, UZS). */
   bidUnit: number;
+  bidTotal: number;
+  /** uzex komissiyasi bahosi (jami). */
   fee: number;
+  taxAmount: number;
+  /** Muzlatiladigan summa (garov + demping farqi) — qaytariladi, xarajat emas. */
+  totalFrozen: number;
+  /** true — taklif startdan 20%+ past: demping, katta summa muzlatiladi. */
+  isDumping: boolean;
+  /** Komissiya/muzlash manbai: uzex jonli javobi yoki lokal baho (fallback). */
+  feesSource: "uzex" | "estimate";
+  /** Kutilayotgan sof foyda (jami) va foizi. */
+  net: number;
+  netPct: number;
+  /** Startda (maks. narxda) qatnashilsa bo'ladigan foyda — solishtirish uchun. */
+  netAtStart: number;
+  /** Taklif start narxdan necha % past. */
+  discountPct: number;
   verdict: "good" | "edge" | "bad";
 }
 
@@ -50,7 +82,10 @@ export interface Lot {
   region: string;
   qty: number;
   unit: string;
+  /** Start JAMI narx (birlik × miqdor) — karta/jadval/analitika ko'rsatadi. */
   maxPrice: number;
+  /** Start BIRLIK narx (lot.price) — tender taklif formasining kirishi. */
+  startUnit: number;
   deadlineH: number;
   addedAgo: string;
   status: LotStatus;

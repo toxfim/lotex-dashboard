@@ -54,6 +54,47 @@ export interface ApiRecommendation {
   createdAt: string;
 }
 
+/**
+ * Server hisoblagan "Narx va foydalilik" bloki — HAMMA summalar UZS.
+ * Frontend hech narsa hisoblamaydi, faqat formatlab ko'rsatadi.
+ */
+export interface ApiLotPricing {
+  /** Supplier narxining manba valyutasi. */
+  currency: "USD" | "UZS";
+  /** USD bo'lsa ishlatilgan kurs, UZS manbada null. */
+  exchangeRate: number | null;
+  rateSource: string | null;
+  quantity: number;
+  startUnitPrice: number;
+  startTotal: number;
+  /** Supplier birlik narxi — manba valyutada (masalan 180 $). */
+  unitCostSource: number;
+  /** Supplier birlik narxi UZS'da. */
+  unitCost: number;
+  costTotal: number;
+  marginMultiplier: number | null;
+  /** Tavsiya taklif — birlik (startga clamp qilingan). */
+  bidUnit: number;
+  bidTotal: number;
+  clampedToStart: boolean;
+  /** uzex ishtirok komissiyasi (jami). */
+  commission: number;
+  /** true — taklif startdan 20%+ past (demping): farq qo'shimcha muzlatiladi. */
+  isDumping: boolean;
+  /** Jami muzlatiladigan summa: garov + demping (qaytariladi). */
+  totalFrozen: number;
+  /** "uzex" — jonli GetOfferProviderPledgeAndComission; "estimate" — lokal fallback. */
+  feesSource: "uzex" | "estimate";
+  taxRate: number;
+  taxAmount: number;
+  netProfit: number;
+  netPct: number;
+  /** Startda (maks. narxda) qatnashilsa bo'ladigan foyda — solishtirish uchun. */
+  netProfitAtStart: number;
+  discountPct: number;
+  verdict: "good" | "edge" | "bad";
+}
+
 /** Lotning o'zi (recommendation relyatsiyasisiz). */
 export interface ApiLotBase {
   id: string;
@@ -81,6 +122,8 @@ export interface ApiLotBase {
   createdAt: string;
   /** Uzex tomonidan lotni tavsiya qilgan yuridik shaxs(lar) (bir nechta bo'lishi mumkin). */
   legalEntities: { id: string; name: string; inn: string | null }[];
+  /** Server hisoblagan narx-foydalilik bloki (mos tovar/narx bo'lmasa null). */
+  pricing?: ApiLotPricing | null;
 }
 
 /** GET /api/lots javobidagi lot — recommendation bilan birga (null bo'lishi mumkin). */

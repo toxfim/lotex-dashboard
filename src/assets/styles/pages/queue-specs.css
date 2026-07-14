@@ -264,14 +264,22 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0; /* uzun izoh qiymatni siqmasin — izoh qisqaradi */
+  white-space: nowrap; /* yorliq matni bo'linmaydi — o'rniga izoh (pr-sub) qisqaradi */
 }
 .price-row .pr-label .pr-sub {
   color: var(--ink-4);
   font-size: 11.5px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .price-row .pr-val {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap; /* pul summasi hech qachon ikki qatorga bo'linmasin */
+  margin-left: 12px;
 }
 .price-row.minus .pr-val {
   color: var(--bad-ink);

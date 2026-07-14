@@ -49,6 +49,13 @@ import type {
   RegistrationStart,
   RegistrationStatus,
 } from "@/types/auth";
+import type {
+  ParticipationPreview,
+  PledgePreview,
+  TenderBidResult,
+} from "@/types/tender";
+import type { ApiMarginTier, MarginTierInput } from "@/types/margin";
+import type { ApiBhm, BhmInput } from "@/types/bhm";
 
 // Backendga proxy qilinadigan prefiks (vite.config.ts → server.proxy).
 // VITE_API_BASE bilan almashtirish mumkin — masalan static test-data rejimi:
@@ -108,6 +115,39 @@ export interface GetShopProductsParams {
   status?: ShopStatus;
   sortBy?: "createdAt" | "name" | "price";
   order?: "asc" | "desc";
+}
+
+/** Tender pledge-preview so'rov tanasi (hisob-kitob, saqlamaydi). */
+export interface TenderPreviewRequest {
+  /** Majburiy — garov/komissiyani uzex hisoblaydi (token kerak). */
+  credentialId: string;
+  bidUnitPrice: number;
+  startUnitPrice?: number;
+  quantity?: number;
+  costPrice?: number;
+  deliveryCost?: number;
+  logisticsCost?: number;
+}
+
+/** Tender bid (taklif) so'rov tanasi. `dryRun` bo'lsa haqiqiy taklif yuborilmaydi. */
+export interface TenderBidRequest extends TenderPreviewRequest {
+  recordId?: number;
+  dryRun?: boolean;
+}
+
+/**
+ * Tender participation-preview so'rov tanasi — tovar (supplier) narxidan
+ * sebestoimost va tavsiya qatnashish narxi (teskari formula, saqlamaydi).
+ */
+export interface TenderParticipationRequest {
+  credentialId: string;
+  /** Tovar birlik narxi (supplier narxi, `productCurrency` valyutasida). */
+  productPrice: number;
+  productCurrency: "USD" | "UZS";
+  /** Jami qo'shimcha harajatlar (logistika va h.k.), ixtiyoriy. */
+  additionalCosts?: number;
+  quantity?: number;
+  startUnitPrice?: number;
 }
 
 function buildQuery(
@@ -272,6 +312,113 @@ export const api = {
       `/recommendations/${encodeURIComponent(id)}`,
       { method: "PATCH", body: JSON.stringify({ managerDecision }) },
     );
+  },
+
+  // --------------------------------------------------------------- tenders
+  /** GET /api/bhm/current — hozir amal qiladigan BHM (404 → sozlanmagan). */
+  getCurrentBhm(): Promise<{
+    data: { amount: number; effectiveFrom: string };
+  }> {
+    return request("/bhm/current");
+  },
+
+  /** GET /api/bhm — BHM tarixi (yangi sana birinchi). */
+  getBhmHistory(): Promise<{ data: ApiBhm[] }> {
+    return request<{ data: ApiBhm[] }>("/bhm");
+  },
+
+  /** POST /api/bhm — yangi BHM qiymati qo'shadi. */
+  createBhm(body: BhmInput): Promise<{ data: ApiBhm }> {
+    return request<{ data: ApiBhm }>("/bhm", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** PATCH /api/bhm/:id — BHM qiymatini tahrirlaydi. */
+  updateBhm(id: string, body: Partial<BhmInput>): Promise<{ data: ApiBhm }> {
+    return request<{ data: ApiBhm }>(`/bhm/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+  },
+
+  /** DELETE /api/bhm/:id — BHM qiymatini o'chiradi. */
+  deleteBhm(id: string): Promise<{ data: ApiBhm }> {
+    return request<{ data: ApiBhm }>(`/bhm/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+
+  /**
+   * POST /api/tenders/:lotId/pledge-preview — berilgan taklif narxi uchun
+   * garov/komissiya (uzex) va marjani hisoblaydi. SAQLAMAYDI, taklif YUBORMAYDI.
+   */
+  tenderPledgePreview(
+    lotId: string,
+    body: TenderPreviewRequest,
+  ): Promise<{ data: PledgePreview }> {
+    return request(`/tenders/${encodeURIComponent(lotId)}/pledge-preview`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  /**
+   * POST /api/tenders/:lotId/participation-preview — tovar narxidan sebestoimost
+   * va tavsiya qatnashish narxini hisoblaydi (marja narvoni + YaTT 5% + uzex
+   * komissiyasi, teskari formula). SAQLAMAYDI, taklif YUBORMAYDI.
+   */
+  tenderParticipationPreview(
+    lotId: string,
+    body: TenderParticipationRequest,
+  ): Promise<{ data: ParticipationPreview }> {
+    return request(
+      `/tenders/${encodeURIComponent(lotId)}/participation-preview`,
+      { method: "POST", body: JSON.stringify(body) },
+    );
+  },
+
+  /**
+   * POST /api/tenders/:lotId/bid — tenderga taklif. `dryRun: true` bo'lsa
+   * DRAFT saqlanadi, haqiqiy AddBid CHAQIRILMAYDI (uzex'da pul muzlamaydi).
+   */
+  tenderPlaceBid(
+    lotId: string,
+    body: TenderBidRequest,
+  ): Promise<{ data: TenderBidResult }> {
+    return request(`/tenders/${encodeURIComponent(lotId)}/bid`, {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+  },
+
+  // ----------------------------------------------------------- margin tiers
+  /** GET /api/margin-tiers — barcha marja tier'lari (narx bo'yicha o'sish tartibida). */
+  getMarginTiers(): Promise<{ data: ApiMarginTier[] }> {
+    return request<{ data: ApiMarginTier[] }>("/margin-tiers");
+  },
+
+  /** GET /api/margin-tiers/for-price?price=N — N qaysi tier'ga tushadi (yo'q bo'lsa null). */
+  getMarginTierForPrice(
+    price: number,
+  ): Promise<{ data: ApiMarginTier | null }> {
+    return request<{ data: ApiMarginTier | null }>(
+      `/margin-tiers/for-price${buildQuery({ price })}`,
+    );
+  },
+
+  /**
+   * PUT /api/margin-tiers — BUTUN narvonni atomar almashtiradi (bo'laklab emas).
+   * Uzluksizlik buzilsa (bo'shliq/kesishish) backend 400 qaytaradi.
+   */
+  replaceMarginTiers(
+    tiers: MarginTierInput[],
+  ): Promise<{ data: ApiMarginTier[] }> {
+    return request<{ data: ApiMarginTier[] }>("/margin-tiers", {
+      method: "PUT",
+      body: JSON.stringify({ tiers }),
+    });
   },
 
   /** GET /api/credentials — magazin credentiallari (maxfiy maydonlar maskalangan). */

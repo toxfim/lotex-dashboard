@@ -1,4 +1,5 @@
 import { ref, onMounted, onUnmounted } from "vue";
+import { getStoredToken } from "@/stores/auth";
 import type { ApiPipelineStatus } from "@/types/api";
 
 /**
@@ -17,7 +18,11 @@ export function usePipelineStatus() {
 
   function wsUrl(): string {
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${location.host}/api/ws/status`;
+    // WS upgrade Authorization header yubora olmaydi — backend `wsAuth` tokenni
+    // query-param'dan o'qiydi. Token bo'lmasa backend 401 qaytaradi.
+    const token = getStoredToken();
+    const query = token ? `?token=${encodeURIComponent(token)}` : "";
+    return `${proto}//${location.host}/api/ws/status${query}`;
   }
 
   function connect() {

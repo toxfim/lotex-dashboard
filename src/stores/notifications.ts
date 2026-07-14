@@ -1,6 +1,7 @@
 import { computed, ref } from "vue";
 import { defineStore } from "pinia";
 import { api } from "@/lib/api";
+import { getStoredToken } from "@/stores/auth";
 import { useToast } from "@/composables/useToast";
 import type {
   AppNotification,
@@ -73,7 +74,11 @@ export const useNotificationsStore = defineStore("notifications", () => {
 
   function wsUrl(): string {
     const proto = location.protocol === "https:" ? "wss:" : "ws:";
-    return `${proto}//${location.host}/api/ws/notifications`;
+    // WS upgrade Authorization header yubora olmaydi — backend `wsAuth` tokenni
+    // query-param'dan o'qiydi. Token bo'lmasa backend 401 qaytaradi.
+    const token = getStoredToken();
+    const query = token ? `?token=${encodeURIComponent(token)}` : "";
+    return `${proto}//${location.host}/api/ws/notifications${query}`;
   }
 
   function connect() {

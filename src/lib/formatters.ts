@@ -62,26 +62,5 @@ export function deadline(h: number): DeadlineResult {
   return { text, sub: "", urgent: h <= 24, closed: false };
 }
 
-export interface PricingResult {
-  bidTotal: number;
-  costTotal: number;
-  gross: number;
-  net: number;
-  netPct: number;
-  grossPct: number;
-}
-
-export function computePricing(p: {
-  bidUnit: number;
-  qty: number;
-  unitCost: number;
-  fee: number;
-}): PricingResult {
-  const bidTotal = p.bidUnit * p.qty;
-  const costTotal = p.unitCost * p.qty;
-  const gross = bidTotal - costTotal;
-  const net = gross - p.fee;
-  const netPct = (net / bidTotal) * 100;
-  const grossPct = (gross / bidTotal) * 100;
-  return { bidTotal, costTotal, gross, net, netPct, grossPct };
-}
+// Narx-foydalilik hisobi (computePricing) BACKENDGA ko'chirildi: qiymatlar
+// endi tayyor holda lot.pricing (UZS) ichida keladi — frontend faqat formatlaydi.

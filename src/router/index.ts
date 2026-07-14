@@ -15,7 +15,9 @@ const router = createRouter({
       redirect: "/queue",
     },
     {
-      path: "/queue",
+      // :tab? (pending|accepted|rejected) + :lotId? (offerNo yoki id) URL'da —
+      // ulashish/yangilashga chidamli. Eski /queue/<lotNo> linklar ham qo'llanadi.
+      path: "/queue/:tab?/:lotId?",
       name: "queue",
       component: () => import("@/views/QueueView.vue"),
     },
@@ -57,7 +59,9 @@ const router = createRouter({
       component: () => import("@/views/AnalyticsView.vue"),
     },
     {
-      path: "/settings",
+      // :tab? — har bir settings tabi uchun alohida path (/settings/rate, /settings/bhm...).
+      // Param bo'lmasa yoki yaroqsiz bo'lsa, komponent /settings/account'ga normalizatsiya qiladi.
+      path: "/settings/:tab?",
       name: "settings",
       component: () => import("@/views/SettingsView.vue"),
     },

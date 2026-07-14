@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useQueueStore } from "@/stores/queue";
 import { useToast } from "@/composables/useToast";
 import { useMatchRunner } from "@/composables/useMatchRunner";
@@ -14,6 +15,8 @@ import TopbarSettings from "@/components/layout/TopbarSettings.vue";
 import type { Lot, LotStatus } from "@/types/lot";
 
 const queueStore = useQueueStore();
+const route = useRoute();
+const router = useRouter();
 const { pushToast } = useToast();
 const { t } = useI18n();
 // "Hozir match qil" — tugagach navbatni qayta yuklaymiz (yangi mosliklar chiqsin)
@@ -82,6 +85,97 @@ const selLot = computed(() =>
   sel.value ? (queueStore.getLot(sel.value) ?? null) : null,
 );
 
+// ---- URL sinxroni: /queue/:tab?/:lotId? (mas. /queue/accepted/SO27484907) ----
+
+const STATUSES: LotStatus[] = ["pending", "accepted", "rejected"];
+
+/** URL'dagi identifikatorni lotga moslaydi: offerNo (SO...), ichki id yoki buyerLotId. */
+function findByRouteParam(param: string): Lot | null {
+  return (
+    queueStore.items.find(
+      (l) =>
+        l.lotNo === param ||
+        l.id === param ||
+        String(l.buyerLotId ?? "") === param,
+    ) ?? null
+  );
+}
+
+// O'zimiz yozayotgan router.replace tugaguncha URL→state qo'llanmaydi —
+// aks holda ESKI param tab/tanlovni orqaga qaytarib yuboradi (poyga).
+let writingRoute = 0;
+
+/** Joriy holatdan URL yasaydi; lot faqat joriy tabga tegishli bo'lsa qo'shiladi. */
+function statePath(): string {
+  const lot = selLot.value;
+  const lotSeg =
+    lot && lot.status === tab.value ? `/${lot.lotNo || lot.id}` : "";
+  return `/queue/${tab.value}${lotSeg}`;
+}
+
+// State → URL. replace (push emas): har karta bosilishi tarixni to'ldirmasin.
+watch([tab, sel], async () => {
+  const target = statePath();
+  if (route.path === target) return;
+  writingRoute++;
+  try {
+    await router.replace(target);
+  } finally {
+    writingRoute--;
+  }
+});
+
+// URL → state: tashqi navigatsiya (orqaga tugmasi, qo'lda URL, birinchi ochilish).
+function applyRoute() {
+  if (writingRoute > 0) return; // bu bizning yozuvimiz — qayta qo'llash shart emas
+  let tabParam = route.params.tab;
+  let lotParam = route.params.lotId;
+  // Eski ko'rinishdagi /queue/<lotNo> linklar: birinchi segment status emas → lot.
+  if (
+    typeof tabParam === "string" &&
+    tabParam &&
+    !STATUSES.includes(tabParam as LotStatus)
+  ) {
+    lotParam = tabParam;
+    tabParam = "";
+  }
+  if (typeof lotParam === "string" && lotParam) {
+    const lot = findByRouteParam(lotParam);
+    if (lot) {
+      // Lot tabdan ustun: lot qaysi holatda bo'lsa, o'sha tab ochiladi.
+      if (tab.value !== lot.status) tab.value = lot.status;
+      if (sel.value !== lot.id) sel.value = lot.id;
+      return;
+    }
+    // Lot hali yuklanmagan bo'lishi mumkin — items to'lganda qayta urinamiz.
+  }
+  if (
+    typeof tabParam === "string" &&
+    STATUSES.includes(tabParam as LotStatus) &&
+    tab.value !== tabParam
+  ) {
+    tab.value = tabParam as LotStatus;
+    return;
+  }
+  // Paramsiz /queue (sidebar bosilganda): holat saqlanadi, URL holatga tenglanadi.
+  if (!tabParam && !lotParam) {
+    const target = statePath();
+    if (route.path !== target) {
+      writingRoute++;
+      void router.replace(target).finally(() => {
+        writingRoute--;
+      });
+    }
+  }
+}
+
+watch(() => route.fullPath, applyRoute);
+// Ro'yxat kech yuklanadi — URL'dagi lot endi topilishi mumkin.
+watch(
+  () => queueStore.items.length,
+  () => applyRoute(),
+);
+
 watch(tab, () => {
   if (sel.value && !visible.value.some((l) => l.id === sel.value)) {
     sel.value = visible.value[0]?.id ?? null;
@@ -91,13 +185,15 @@ watch(tab, () => {
   }
 });
 
-// Ma'lumot async yuklangani uchun ro'yxat to'lganda birinchi elementni tanlaymiz.
+// Ma'lumot async yuklangani uchun ro'yxat to'lganda birinchi elementni tanlaymiz
+// (URL'dagi lot bo'lsa, uni yuqoridagi applyRoute allaqachon tanlagan bo'ladi).
 watch(visible, (rows) => {
   if (!sel.value && rows.length) sel.value = rows[0].id;
 });
 
 onMounted(() => {
   queueStore.ensureLoaded();
+  applyRoute();
   if (!sel.value && visible.value.length) sel.value = visible.value[0].id;
 });
 

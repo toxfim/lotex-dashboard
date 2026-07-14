@@ -45,15 +45,6 @@ const REC_STATUS_TO_LLM: Record<ApiRecommendationStatus, LotMatch["llm"]> = {
   NOT_FOUND: "rejected",
 };
 
-const REC_STATUS_TO_VERDICT: Record<
-  ApiRecommendationStatus,
-  LotPricing["verdict"]
-> = {
-  RECOMMENDED: "good",
-  NEEDS_REVIEW: "edge",
-  NOT_FOUND: "bad",
-};
-
 /** js_properties (noma'lum JSON) ni texnik talablar jadvaliga aylantiradi. */
 function parseSpecs(requirements: unknown): LotSpec[] {
   if (!Array.isArray(requirements)) return [];
@@ -120,26 +111,61 @@ function buildMatch(lot: ApiLot): LotMatch {
   };
 }
 
+/**
+ * Backend hisoblagan pricing payload'ini ko'rsatish shakliga o'giradi.
+ * Hisob-kitob YO'Q — hamma qiymatlar serverdan UZS'da tayyor keladi.
+ * pricing null (mos tovar/narx yo'q) — blok "tahlil yo'q" holatida.
+ */
 function buildPricing(lot: ApiLot): LotPricing {
-  const rec = lot.recommendation;
-  const qty = lot.quantity ?? 0;
-  if (!rec) {
+  const p = lot.pricing;
+  if (!p) {
+    const qty = lot.quantity ?? 1;
     return {
-      maxPrice: lot.price,
-      unitCost: 0,
+      available: false,
       qty,
+      startUnit: lot.price,
+      maxPrice: lot.price * (qty || 1),
+      unitCost: 0,
+      costTotal: 0,
+      unitCostSource: 0,
+      currency: "UZS",
+      exchangeRate: null,
       bidUnit: 0,
+      bidTotal: 0,
       fee: 0,
+      taxAmount: 0,
+      totalFrozen: 0,
+      isDumping: false,
+      feesSource: "estimate",
+      net: 0,
+      netPct: 0,
+      netAtStart: 0,
+      discountPct: 0,
       verdict: "bad",
     };
   }
   return {
-    maxPrice: lot.price,
-    unitCost: rec.costPrice,
-    qty,
-    bidUnit: rec.recommendedPrice,
-    fee: rec.tenderFee ?? 0,
-    verdict: REC_STATUS_TO_VERDICT[rec.recommendedStatus],
+    available: true,
+    qty: p.quantity,
+    startUnit: p.startUnitPrice,
+    maxPrice: p.startTotal,
+    unitCost: p.unitCost,
+    costTotal: p.costTotal,
+    unitCostSource: p.unitCostSource,
+    currency: p.currency,
+    exchangeRate: p.exchangeRate,
+    bidUnit: p.bidUnit,
+    bidTotal: p.bidTotal,
+    fee: p.commission,
+    taxAmount: p.taxAmount,
+    totalFrozen: p.totalFrozen,
+    isDumping: p.isDumping,
+    feesSource: p.feesSource,
+    net: p.netProfit,
+    netPct: p.netPct,
+    netAtStart: p.netProfitAtStart,
+    discountPct: p.discountPct,
+    verdict: p.verdict,
   };
 }
 
@@ -157,7 +183,10 @@ export function mapApiLot(lot: ApiLot): Lot {
     region: "",
     qty: lot.quantity ?? 0,
     unit: lot.unit ?? "dona",
+    // lot.price — BIRLIK start narx (uzex saytidagi kabi); jami summalar
+    // pricing.startTotal ichida, karta/jadval birlik narxni ko'rsatadi.
     maxPrice: lot.price,
+    startUnit: lot.price,
     deadlineH: hoursUntil(lot.tenderEndDate),
     addedAgo: relativeAgo(lot.createdAt),
     status: rec ? DECISION_TO_STATUS[rec.managerDecision] : "pending",

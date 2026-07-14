@@ -7,6 +7,7 @@ import PipelineBlock from "@/components/shared/PipelineBlock.vue";
 import SpecsTable from "@/components/shared/SpecsTable.vue";
 import PricingBlock from "@/components/shared/PricingBlock.vue";
 import EmptyState from "@/components/shared/EmptyState.vue";
+import TenderBidModal from "@/components/shared/TenderBidModal.vue";
 import { api } from "@/lib/api";
 import { fmtNum, compactSom, deadline } from "@/lib/formatters";
 import { useI18n } from "@/composables/useI18n";
@@ -28,11 +29,14 @@ const { t } = useI18n();
 const isImageVisible = ref(true);
 // Rasmni bosganda kattalashtirilgan ko'rinish (lightbox).
 const isZoomOpen = ref(false);
+// Tenderga qatnashish modali.
+const isBidOpen = ref(false);
 watch(
   () => props.lot?.id,
   () => {
     isImageVisible.value = true;
     isZoomOpen.value = false;
+    isBidOpen.value = false;
   },
 );
 </script>
@@ -249,9 +253,12 @@ watch(
       </div>
     </div>
 
-    <!-- Action bar (only for pending lots) -->
-    <div v-if="lot.status === 'pending'" class="action-bar">
-      <div class="ab-hint">
+    <!-- Action bar: qatnashish (tavsiya qilingan yur.litso bo'lsa) + qaror (pending) -->
+    <div
+      v-if="lot.status === 'pending' || lot.legalEntities.length"
+      class="action-bar"
+    >
+      <div v-if="lot.status === 'pending'" class="ab-hint">
         <BaseIcon
           name="cpu"
           :style="{ width: '14px', height: '14px', opacity: 0.6 }"
@@ -262,10 +269,26 @@ watch(
           {{ t("lotDetail.acceptShort") }}</span
         >
       </div>
-      <button class="btn btn-reject btn-lg" @click="emit('reject', lot.id)">
+      <button
+        v-if="lot.legalEntities.length"
+        class="btn btn-accent btn-lg"
+        :style="lot.status !== 'pending' ? 'margin-right:auto' : ''"
+        @click="isBidOpen = true"
+      >
+        <BaseIcon name="flag" /> {{ t("tenderBid.participate") }}
+      </button>
+      <button
+        v-if="lot.status === 'pending'"
+        class="btn btn-reject btn-lg"
+        @click="emit('reject', lot.id)"
+      >
         <BaseIcon name="x" /> {{ t("common.reject") }}
       </button>
-      <button class="btn btn-accept btn-lg" @click="emit('accept', lot.id)">
+      <button
+        v-if="lot.status === 'pending'"
+        class="btn btn-accept btn-lg"
+        @click="emit('accept', lot.id)"
+      >
         <BaseIcon name="check" /> {{ t("common.accept") }}
       </button>
     </div>
@@ -295,6 +318,11 @@ watch(
           </figcaption>
         </figure>
       </div>
+    </Teleport>
+
+    <!-- Tenderga qatnashish modali (drawer transformidan mustaqil bo'lishi uchun Teleport) -->
+    <Teleport to="body">
+      <TenderBidModal v-if="isBidOpen" :lot="lot" @close="isBidOpen = false" />
     </Teleport>
   </div>
 </template>

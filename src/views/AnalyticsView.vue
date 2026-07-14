@@ -11,7 +11,7 @@ import StatusDonut from "@/components/charts/StatusDonut.vue";
 import HBars from "@/components/charts/HBars.vue";
 import FunnelChart from "@/components/charts/FunnelChart.vue";
 import type { DayDecision, FunnelStage } from "@/types/stock";
-import { fmtNum, compactSom, computePricing } from "@/lib/formatters";
+import { fmtNum, compactSom } from "@/lib/formatters";
 
 const lotStore = useLotStore();
 const { t } = useI18n();
@@ -106,7 +106,7 @@ const counts = computed(() => ({
 }));
 
 const wonValue = computed(() =>
-  lotStore.accepted.reduce((s, l) => s + computePricing(l.pricing).bidTotal, 0),
+  lotStore.accepted.reduce((s, l) => s + l.pricing.bidTotal, 0),
 );
 
 const valueByCat = computed(() => {
@@ -326,7 +326,7 @@ const tint: Record<string, [string, string]> = {
               >
                 {{
                   l.status === "accepted"
-                    ? compactSom(computePricing(l.pricing).bidTotal) +
+                    ? compactSom(l.pricing.bidTotal) +
                       " " +
                       t("currency.som")
                     : "—"
